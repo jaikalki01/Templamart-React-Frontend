@@ -110,3 +110,8 @@
     @apply bg-primary text-primary-foreground hover:bg-primary/90;
   }
 }
+
+.container{
+  width: 95% !important;
+  max-width: 1300px !important;
+  }
