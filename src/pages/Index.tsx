@@ -5,85 +5,40 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import TemplateGrid from "@/components/templates/TemplateGrid";
 import { TemplateProps } from "@/components/templates/TemplateCard";
-
+import axios from "axios";
+import { BASE_URL } from "@/config";
 // Mock data for the templates
-const featuredTemplates: TemplateProps[] = [
-  {
-    id: "1",
-    title: "Modern Dashboard UI Kit",
-    description: "A modern dashboard UI kit with a clean design and customizable components.",
-    price: 49.99,
-    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&q=80",
-    category: "UI Kits",
-    author: {
-      id: "a1",
-      name: "John Designer"
-    },
-    rating: 4.8,
-    sales: 245
-  },
-  {
-    id: "2",
-    title: "E-commerce Website Template",
-    description: "A complete e-commerce website template with product pages, cart, and checkout.",
-    price: 69.99,
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80",
-    category: "Website Templates",
-    author: {
-      id: "a2",
-      name: "WebCraft Studios"
-    },
-    rating: 4.9,
-    sales: 189
-  },
-  {
-    id: "3",
-    title: "Business Presentation Template",
-    description: "Professional presentation template for business proposals and pitches.",
-    price: 29.99,
-    image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=800&q=80",
-    category: "Presentations",
-    author: {
-      id: "a3",
-      name: "PresentPro"
-    },
-    rating: 4.7,
-    sales: 320
-  },
-  {
-    id: "4",
-    title: "Email Marketing Template",
-    description: "Responsive email template for newsletters and marketing campaigns.",
-    price: 19.99,
-    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=80",
-    category: "Email Templates",
-    author: {
-      id: "a4",
-      name: "EmailMasters"
-    },
-    rating: 4.6,
-    sales: 178
-  }
-];
+//const BASE_URL = process.env.REACT_APP_BASE_URL || "http://127.0.0.1:8000/product";
 
-const popularCategories = [
-  { name: "Website Templates", count: 245, slug: "website-templates" },
-  { name: "UI Kits", count: 189, slug: "ui-kits" },
-  { name: "Graphics", count: 320, slug: "graphics" },
-  { name: "Presentations", count: 178, slug: "presentations" },
-  { name: "Email Templates", count: 156, slug: "email-templates" },
-  { name: "Documents", count: 112, slug: "documents" },
-];
+
+
 
 const Index = () => {
+  //const BASE_URL ="http://127.0.0.1:8000/product"
   const [searchQuery, setSearchQuery] = useState("");
   const [newTemplates, setNewTemplates] = useState<TemplateProps[]>([]);
-  
+  const [featuredTemplates, setfeaturedTemplates] = useState<TemplateProps[]>([]);
+  const [popularCategories, setCategories] = useState([]);
+ 
   useEffect(() => {
-    // Mock API call to get new templates
-    setNewTemplates(featuredTemplates.map(t => ({...t, id: `new-${t.id}`})));
-  }, []);
-  
+    axios.get(`${BASE_URL}/templates`)
+      .then(response => {
+        // Update the templates with new IDs as in the mock function
+        setNewTemplates(response.data.map(t => ({ ...t, id: `new-${t.id}` })));
+        setfeaturedTemplates(response.data.map(t => ({ ...t, id: `new-${t.id}` })));
+      })
+      axios.get(`${BASE_URL}/popular-categories`)
+      .then(response => {
+        setCategories(response.data);
+      })
+      .catch(error => {
+        console.error("Error fetching templates:", error);
+      });
+  }, []); // Runs once on mount
+
+
+
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle search logic
