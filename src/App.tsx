@@ -24,6 +24,10 @@ import TemplateDetails from "@/pages/templates/TemplateDetails";
 import CategoryPage from "@/pages/categories/CategoryPage";
 import UserAccount from "@/pages/account/UserAccount";
 import NotFound from "@/pages/NotFound";
+import Terms from "@/pages/Terms-condition";
+import RefundPolicy from "@/pages/RefundPolicy";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import LicenseAgreement from "@/pages/License";
 
 // Seller Pages
 import SellerDashboard from "@/pages/seller/SellerDashboard";
@@ -68,6 +72,10 @@ const App = () => (
               <Route path="/template/:id" element={<TemplateDetails />} />
               <Route path="/category/:slug" element={<CategoryPage />} />
               <Route path="/account" element={<UserAccount />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/refund" element={<RefundPolicy />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/license" element={<LicenseAgreement />} />
             </Route>
 
             {/* Seller Dashboard Routes */}
