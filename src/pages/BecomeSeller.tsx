@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { CheckCircle, DollarSign, FileCheck, FileText, Package, Users } from "lucide-react";
+import { BASE_URL } from "@/config";
 
 const BecomeSeller = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const BecomeSeller = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:8000/seller/signUp", {
+      const response = await fetch("${BASE_URL}/seller/signUp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
