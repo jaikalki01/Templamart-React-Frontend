@@ -31,6 +31,7 @@ import { ArrowUpDown, Eye, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-r
 import { toast } from "sonner";
 import { useAuth } from "@/context/auth-context";
 import axios from "axios";
+import { BASE_URL } from "@/config";
 // Mock template data
 
 const mockTemplates = [
@@ -90,7 +91,7 @@ const SellerTemplates = () => {
   useEffect(() => {
       const fetchData = async () => {
         try {
-        const templatesRes = await axios.get(`http://localhost:8000/seller/products`, {
+        const templatesRes = await axios.get(`${BASE_URL}/seller/products`, {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },

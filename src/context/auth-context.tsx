@@ -6,7 +6,7 @@ import {
   ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { BASE_URL } from "@/config";
 // Define user shape
 type User = {
   role: number;
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Login function
   const login = async (username: string, password: string) => {
     try {
-      const response = await fetch("http://localhost:8000/auth/login", {
+      const response = await fetch(`${BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",

@@ -21,13 +21,13 @@ const Index = () => {
   const [popularCategories, setCategories] = useState([]);
  
   useEffect(() => {
-    axios.get(`${BASE_URL}/templates`)
+    axios.get(`${BASE_URL}/product/templates`)
       .then(response => {
         // Update the templates with new IDs as in the mock function
         setNewTemplates(response.data.map(t => ({ ...t, id: `new-${t.id}` })));
         setfeaturedTemplates(response.data.map(t => ({ ...t, id: `new-${t.id}` })));
       })
-      axios.get(`${BASE_URL}/popular-categories`)
+      axios.get(`${BASE_URL}/product/popular-categories`)
       .then(response => {
         setCategories(response.data);
       })
