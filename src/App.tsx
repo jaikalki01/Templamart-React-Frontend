@@ -1,10 +1,11 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ShoppingProvider } from "@/context/ShoppingContext";
+import ProtectedRoute from "@/context/ProtectedRoute";
+import { AuthProvider } from "@/context/auth-context";
 
 // Layouts
 import MainLayout from "@/components/layout/MainLayout";
@@ -20,7 +21,7 @@ import Wishlist from "@/pages/Wishlist";
 import Pricing from "@/pages/Pricing";
 import BecomeSeller from "@/pages/BecomeSeller";
 import TemplatesPage from "@/pages/templates/TemplatesPage";
-import TemplateDetails from "@/pages/templates/TemplateDetails";
+import TemplateDetails from "@/pages/templates/TemplateDetails2";
 import CategoryPage from "@/pages/categories/CategoryPage";
 import UserAccount from "@/pages/account/UserAccount";
 import NotFound from "@/pages/NotFound";
@@ -53,60 +54,88 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <TooltipProvider>
-        <ShoppingProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            {/* Main Site Routes */}
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/become-seller" element={<BecomeSeller />} />
-              <Route path="/templates" element={<TemplatesPage />} />
-              <Route path="/template/:id" element={<TemplateDetails />} />
-              <Route path="/category/:slug" element={<CategoryPage />} />
-              <Route path="/account" element={<UserAccount />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/refund" element={<RefundPolicy />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/license" element={<LicenseAgreement />} />
-            </Route>
+     <BrowserRouter>
+    <AuthProvider>
+     
+        <TooltipProvider>
+          <ShoppingProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              {/* Main Site Routes */}
+              <Route element={<MainLayout />}>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/become-seller" element={<BecomeSeller />} />
+                <Route path="/templates" element={<TemplatesPage />} />
+                <Route path="/template/:id" element={<TemplateDetails />} />
+                <Route path="/category/:slug" element={<CategoryPage />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/refund" element={<RefundPolicy />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/license" element={<LicenseAgreement />} />
+              </Route>
 
-            {/* Seller Dashboard Routes */}
-            <Route path="/seller" element={<SellerLayout />}>
-              <Route path="dashboard" element={<SellerDashboard />} />
-              <Route path="templates" element={<SellerTemplates />} />
-              <Route path="templates/new" element={<UploadTemplate />} />
-              <Route path="sales" element={<SellerSales />} />
-              <Route path="analytics" element={<SellerAnalytics />} />
-              <Route path="wallet" element={<SellerWallet />} />
-              <Route path="settings" element={<SellerSettings />} />
-            </Route>
+              {/* Seller Dashboard Routes */}
+              <Route
+                path="/account/*"
+                element={
+                  <ProtectedRoute allowedRoles={[1,2,3]}>
+                    <UserAccount />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="account" element={<UserAccount />} />
+               
+              </Route>
+              <Route
+                path="/seller/*"
+                element={
+                  <ProtectedRoute allowedRoles={[2]}>
+                    <SellerLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="dashboard" element={<SellerDashboard />} />
+                <Route path="templates" element={<SellerTemplates />} />
+                <Route path="templates/new" element={<UploadTemplate />} />
+                <Route path="sales" element={<SellerSales />} />
+                <Route path="analytics" element={<SellerAnalytics />} />
+                <Route path="wallet" element={<SellerWallet />} />
+                <Route path="settings" element={<SellerSettings />} />
+              </Route>
 
-            {/* Admin Dashboard Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="users" element={<UsersManagement />} />
-              <Route path="sellers" element={<SellersManagement />} />
-              <Route path="templates" element={<TemplatesManagement />} />
-              <Route path="categories" element={<CategoriesManagement />} />
-              <Route path="sales" element={<SalesManagement />} />
-              <Route path="analytics" element={<AnalyticsManagement />} />
-              <Route path="wallet" element={<WalletManagement />} />
-              <Route path="settings" element={<AdminSettings />} />
-            </Route>
+              {/* Admin Dashboard Routes */}
+              <Route
+                path="/admin/*"
+                element={
+                  <ProtectedRoute allowedRoles={[3]}>
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="users" element={<UsersManagement />} />
+                <Route path="sellers" element={<SellersManagement />} />
+                <Route path="templates" element={<TemplatesManagement />} />
+                <Route path="categories" element={<CategoriesManagement />} />
+                <Route path="sales" element={<SalesManagement />} />
+                <Route path="analytics" element={<AnalyticsManagement />} />
+                <Route path="wallet" element={<WalletManagement />} />
+                <Route path="settings" element={<AdminSettings />} />
+              </Route>
 
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </ShoppingProvider>
-      </TooltipProvider>
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ShoppingProvider>
+        </TooltipProvider>
+      
+    </AuthProvider> 
     </BrowserRouter>
   </QueryClientProvider>
 );

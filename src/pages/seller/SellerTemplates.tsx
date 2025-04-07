@@ -1,5 +1,5 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+//import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,8 +29,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpDown, Eye, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-
+import { useAuth } from "@/context/auth-context";
+import axios from "axios";
 // Mock template data
+
 const mockTemplates = [
   {
     id: "1",
@@ -79,10 +81,31 @@ const mockTemplates = [
 ];
 
 const SellerTemplates = () => {
-  const [templates, setTemplates] = useState(mockTemplates);
+  const [templates, setTemplates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const { user } = useAuth(); // ✅ Get token and role
+
+  useEffect(() => {
+      const fetchData = async () => {
+        try {
+        const templatesRes = await axios.get(`http://localhost:8000/seller/products`, {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
+         const templates1 = templatesRes.data.map(t => ({ ...t, id: `new-${t.id}` }));
+         setTemplates(templates1);
+         
+          // Fetch categories and set default
+                } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      };
+  
+      fetchData();
+    }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

@@ -104,7 +104,6 @@ const TemplateDetails = () => {
   const { id } = useParams<{ id: string }>();
   const [activeImage, setActiveImage] = useState(0);
   const { addToCart, toggleWishlist, isInWishlist } = useShoppingContext();
-  const [previewLoading, setPreviewLoading] = useState(true);
   
   const handleLike = () => {
     toggleWishlist(templateCartData);
@@ -123,36 +122,156 @@ const TemplateDetails = () => {
     navigator.clipboard.writeText(window.location.href);
     toast.success("Link copied to clipboard", {
       description: "Share this template with others!",
-    });
-  };
-  const handlePreviewLoad = () => {
-    setPreviewLoading(false);
+    });<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    {/* Left Column - Template Details */}
+    <div className="lg:col-span-2">
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        {/* Template Image */}
+        <img 
+          src={templateData.image} 
+          alt={templateData.title} 
+          className="w-full h-64 object-cover"
+        />
+        
+        {/* Template Preview Tabs */}
+        <Tabs defaultValue="preview" className="p-6">
+          <TabsList className="mb-4">
+            <TabsTrigger value="preview">Live Preview</TabsTrigger>
+            <TabsTrigger value="features">Features</TabsTrigger>
+            <TabsTrigger value="details">Details</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="preview" className="focus:outline-none">
+            <h2 className="text-lg font-semibold mb-4">Live Template Preview</h2>
+            
+            {previewLoading && (
+              <div className="h-[400px] w-full flex items-center justify-center bg-gray-100">
+                <div className="text-center">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-t-brand-blue border-r-transparent border-b-gray-200 border-l-gray-200 mb-2"></div>
+                  <p>Loading preview...</p>
+                </div>
+              </div>
+            )}
+            
+            <iframe 
+              src="example.com"
+              title={`${templateData.title} preview`}
+              className={`iframe-preview ${previewLoading ? 'hidden' : 'block'}`}
+              onLoad={handlePreviewLoad}
+            />
+            
+            <div className="mt-4 flex justify-between">
+              <Button variant="outline" size="sm" className="flex items-center" asChild>
+                <a href="example.com" target="_blank" rel="noopener noreferrer">
+                  <ExternalLink size={16} className="mr-1" />
+                  Open in New Window
+                </a>
+              </Button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="features" className="focus:outline-none space-y-4">
+            <h2 className="text-lg font-semibold mb-4">Key Features</h2>
+            <ul className="space-y-2">
+              {templateData.features.map((feature, index) => (
+                <li key={index} className="flex items-start">
+                  <Check className="mr-2 text-green-500 mt-1 flex-shrink-0" size={18} />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </TabsContent>
+          
+          <TabsContent value="details" className="focus:outline-none">
+            <h2 className="text-lg font-semibold mb-4">Template Details</h2>
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-medium text-gray-700 mb-1">Description</h3>
+                <p className="text-gray-600">{templateData.description}</p>
+              </div>
+              
+              <div>
+                <h3 className="font-medium text-gray-700 mb-1">Released</h3>
+                <div className="flex items-center">
+                  <Calendar size={16} className="mr-1 text-gray-500" />
+                  <span>21-2-2025</span>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="font-medium text-gray-700 mb-1">Tags</h3>
+                <div className="flex flex-wrap gap-2">
+                  {templateData.tags.map((tag, index) => (
+                    <Badge key={index} variant="secondary">{tag}</Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+    
+    {/* Right Column - Purchase Info */}
+    <div className="lg:col-span-1">
+      <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
+        <h1 className="text-2xl font-bold mb-2">{templateData.title}</h1>
+        
+        <div className="flex items-center mb-4">
+          <div className="flex items-center mr-4">
+            <Star className="text-yellow-500 mr-1" size={18} fill="currentColor" />
+            <span className="font-medium">{templateData.rating}</span>
+          </div>
+          <div className="flex items-center text-gray-600">
+            <Download className="mr-1" size={16} />
+            <span>example.com downloads</span>
+          </div>
+        </div>
+        
+        <div className="mb-6">
+          {templateData.price ? (
+            <div className="flex items-center">
+              <span className="text-3xl font-bold text-brand-blue">${templateData.price.toFixed(2)}</span>
+              <span className="ml-2 text-gray-500 line-through">${templateData.price.toFixed(2)}</span>
+            </div>
+          ) : (
+            <span className="text-3xl font-bold text-brand-blue">${templateData.price.toFixed(2)}</span>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
   };
 
   return (
     <div className="container py-8">
+
       <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
         <div className="space-y-4">
           <div className="overflow-hidden rounded-lg">
-          <iframe 
-                  src="https://example.com"
-                  title={`${templateData.title} preview`}
-                  //className={`iframe-preview ${previewLoading ? 'hidden' : 'block'}`}
-                  //className="h-auto w-full rounded-lg object-cover"
-                  className="h-[600px] w-full flex items-center justify-center bg-gray-100"
-                  onLoad={handlePreviewLoad}
-                />
-                <div className="mt-4 flex justify-between">
-                  <Button variant="outline" size="sm" className="flex items-center" asChild>
-                    <a href="example.com" target="_blank" rel="noopener noreferrer">
-                      <ExternalLink size={16} className="mr-1" />
-                      Open in New Window
-                    </a>
-                  </Button>
-                </div>
-            
+            <img
+              src={templateData.images[activeImage]}
+              alt={templateData.title}
+              className="h-auto w-full rounded-lg object-cover"
+            />
           </div>
-         
+          <div className="flex gap-2 overflow-auto pb-2">
+            {templateData.images.map((image, index) => (
+              <button
+                key={index}
+                className={`relative min-w-[80px] overflow-hidden rounded-md ${
+                  activeImage === index ? "ring-2 ring-primary" : ""
+                }`}
+                onClick={() => setActiveImage(index)}
+              >
+                <img
+                  src={image}
+                  alt={`${templateData.title} preview ${index + 1}`}
+                  className="aspect-[4/3] h-20 w-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -303,7 +422,7 @@ const TemplateDetails = () => {
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-12">
         <Tabs defaultValue="description">
           <TabsList className="w-full justify-start">
             <TabsTrigger value="description">Description</TabsTrigger>

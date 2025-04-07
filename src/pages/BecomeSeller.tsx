@@ -13,22 +13,62 @@ import { CheckCircle, DollarSign, FileCheck, FileText, Package, Users } from "lu
 
 const BecomeSeller = () => {
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    full_name: "",
+    phone_number: "",
+    accept_terms: false,
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Only send fields the API expects
+    const { username, email, password, full_name, phone_number } = formData;
+    const payload = { username, email, password, full_name, phone_number };
+
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      toast.success("Application submitted successfully!", {
-        description: "We'll review your application and get back to you soon.",
+
+    try {
+      const response = await fetch("http://localhost:8000/seller/signUp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
       });
-      navigate("/seller/dashboard");
-    }, 1500);
+
+      if (response.ok) {
+        toast.success("Registration successful! Redirecting to login...");
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      } else {
+        const errorData = await response.json();
+        toast.error("Signup failed!", {
+          description: errorData.detail || "Please check your input.",
+        });
+      }
+    } catch (error) {
+      toast.error("Network error!", {
+        description: "Please try again later.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -209,95 +249,73 @@ const BecomeSeller = () => {
         <Card className="mb-8">
           <CardContent className="pt-6">
             <h2 className="text-xl font-bold mb-6">Seller Application</h2>
-            
-            {step === 1 && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input id="fullName" placeholder="Enter your full name" />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" placeholder="Enter your email" />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="portfolio">Portfolio URL (Optional)</Label>
-                  <Input id="portfolio" placeholder="https://your-portfolio.com" />
-                </div>
-                
-                <Button onClick={() => setStep(2)} className="w-full">
-                  Continue
-                </Button>
-              </div>
-            )}
-            
-            {step === 2 && (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Tell us about yourself</Label>
-                  <Textarea
-                    id="bio"
-                    placeholder="Share your experience, skills, and why you want to sell on TemplaMarT"
-                    rows={4}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="specialization">What type of templates do you create?</Label>
-                  <Textarea
-                    id="specialization"
-                    placeholder="Describe your specialization and the types of templates you plan to sell"
-                    rows={4}
-                  />
-                </div>
-                
-                <div className="flex items-start space-x-2 pt-2">
-                  <Checkbox
-                    id="terms"
-                    checked={acceptedTerms}
-                    onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
-                  />
-                  <div className="grid gap-1.5 leading-none">
-                    <Label
-                      htmlFor="terms"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      I agree to the seller terms and conditions
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      By checking this box, you agree to our{" "}
-                      <a href="#" className="text-primary hover:underline">
-                        Terms of Service
-                      </a>{" "}
-                      and{" "}
-                      <a href="#" className="text-primary hover:underline">
-                        Seller Guidelines
-                      </a>
-                      .
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-4 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep(1)}
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="flex-1"
-                    disabled={!acceptedTerms || isSubmitting}
-                  >
-                    {isSubmitting ? "Submitting..." : "Submit Application"}
-                  </Button>
-                </div>
-              </form>
-            )}
+            <form onSubmit={handleSubmit} className="space-y-6">
+      {step === 1 && (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="full_name">Full Name</Label>
+            <Input id="full_name" name="full_name" onChange={handleChange} required />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address</Label>
+            <Input id="email" name="email" type="email" onChange={handleChange} required />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="username">Username</Label>
+            <Input id="username" name="username" onChange={handleChange} required />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" name="password" type="password" onChange={handleChange} required />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone_number">Phone Number</Label>
+            <Input id="phone_number" name="phone_number" onChange={handleChange} required />
+          </div>
+
+          {/* Terms & Conditions */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="accept_terms"
+              name="accept_terms"
+              checked={formData.accept_terms}
+              onChange={handleChange}
+              required
+            />
+            <Label htmlFor="accept_terms">
+              I agree to the{" "}
+              <a href="/terms" target="_blank" className="text-blue-500 underline">
+                Terms & Conditions
+              </a>
+            </Label>
+          </div>
+
+          <Button
+            type="button"
+            onClick={() => setStep(2)}
+            className="w-full"
+            disabled={!formData.accept_terms}
+          >
+            Continue
+          </Button>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className="space-y-4">
+          {/* Additional fields (if any) can go here */}
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Registering..." : "Register"}
+          </Button>
+        </div>
+      )}
+    </form>
+
           </CardContent>
         </Card>
 

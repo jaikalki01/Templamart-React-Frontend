@@ -34,7 +34,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
-
+import { useAuth } from "@/context/auth-context";
+import { BASE_URL } from "@/config";
 // Form validation schema
 const templateFormSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -60,39 +61,77 @@ const defaultValues: Partial<TemplateFormValues> = {
 
 const UploadTemplate = () => {
   const navigate = useNavigate();
+  const { user } = useAuth(); // ✅ Get token and role
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
-  
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [templateZipFile, setTemplateZipFile] = useState<File | null>(null);
+
   const form = useForm<TemplateFormValues>({
     resolver: zodResolver(templateFormSchema),
     defaultValues,
   });
-  
-  const onSubmit = (data: TemplateFormValues) => {
-    console.log("Form data submitted:", data);
-    
-    // In a real app, this would send data to an API
-    toast.success("Template submitted for review", {
-      description: "Your template will be reviewed by our team shortly.",
-    });
-    
-    // Navigate to templates list after submission
-    setTimeout(() => {
+
+  const onSubmit = async (values: TemplateFormValues) => {
+    if (!user?.token) {
+      toast.error("You must be logged in to upload a product.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("product_name", values.title);
+    formData.append("title", values.title);
+    formData.append("description", values.description);
+    formData.append("tags", values.tags);
+    formData.append("licenseType", values.licenseType);
+    formData.append("category_name", values.category);
+    formData.append("product_price", values.price.toString());
+
+    if (thumbnailFile) {
+      formData.append("product_image", thumbnailFile);
+    }
+
+    if (templateZipFile) {
+      formData.append("template_zip", templateZipFile);
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/create-product`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.detail || "Upload failed");
+      }
+
+      toast.success("Product uploaded successfully!");
       navigate("/seller/templates");
-    }, 1500);
+    } catch (error: any) {
+      toast.error(error.message || "Something went wrong");
+    }
   };
-  
+
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    // Create image preview
+    setThumbnailFile(file);
+
     const reader = new FileReader();
-    reader.onload = () => {
-      setThumbnailPreview(reader.result as string);
-    };
+    reader.onload = () => setThumbnailPreview(reader.result as string);
     reader.readAsDataURL(file);
   };
-  
+
+  const handleZipChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setTemplateZipFile(file);
+  };  
+
   return (
     <div className="space-y-6">
       <div>
@@ -272,12 +311,13 @@ const UploadTemplate = () => {
                     <p className="text-sm text-muted-foreground mb-4 text-center">
                       Upload a ZIP file containing all template assets
                     </p>
-                    <Button type="button" variant="outline">
+                    <Button type="button" variant="outline" onClick={() => document.getElementById("files")?.click()}>
                       Browse Files
                     </Button>
                     <input
                       type="file"
                       id="files"
+                      onChange={handleZipChange}
                       className="hidden"
                       accept=".zip,.rar,.7zip"
                     />

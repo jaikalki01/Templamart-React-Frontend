@@ -1,34 +1,26 @@
-
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/auth-context";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
 const LoginForm = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState(""); // used as username
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [errorMsg, setErrorMsg] = useState("");
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    // Mock login - to be replaced with actual authentication
-    setTimeout(() => {
-      console.log("Login with:", { email, password });
-      setIsLoading(false);
-      navigate("/");
-    }, 1000);
+    setErrorMsg("");
+
+    try {
+      await login(username, password);
+    } catch (error) {
+      setErrorMsg("Invalid email or password. Please try again.");
+    }
   };
 
   return (
@@ -41,27 +33,21 @@ const LoginForm = () => {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
+          {errorMsg && <div className="text-red-600 text-sm">{errorMsg}</div>}
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
-              type="email"
+              type="text"
               placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link
-                to="/forgot-password"
-                className="text-xs text-primary hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
+            <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
@@ -73,9 +59,7 @@ const LoginForm = () => {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
-          </Button>
+          <Button type="submit" className="w-full">Login</Button>
           <div className="text-center text-sm">
             Don&apos;t have an account?{" "}
             <Link to="/signup" className="text-primary hover:underline">

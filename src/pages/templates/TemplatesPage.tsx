@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,7 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import TemplateGrid from "@/components/templates/TemplateGrid";
 import { TemplateProps } from "@/components/templates/TemplateCard";
-
+import axios from "axios";
+import { BASE_URL } from "@/config";
 // Mock template data - in a real app, this would come from an API
 const allTemplates: TemplateProps[] = [
   {
@@ -121,11 +122,45 @@ const sortOptions = [
 ];
 
 const TemplatesPage = () => {
+  const [allTemplates, setallTemplates] = useState<TemplateProps[]>([]);
+  //const [filteredTemplates, setFilteredTemplates] = useState(allTemplates);
+  const [filteredTemplates, setFilteredTemplates] = useState<TemplateProps[]>([]);
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [category, setCategory] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
+  //const [category, setCategory] = useState("all");
+  //const [sortBy, setSortBy] = useState("newest");
+  const [category, setCategory] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState([0, 100]);
-  const [filteredTemplates, setFilteredTemplates] = useState(allTemplates);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const categoriesRes = await axios.get(`${BASE_URL}/all-categories`);
+        const categories = categoriesRes.data;
+        setCategory(categories.length > 0 ? categories[0].value : "all"); // Set first category as default
+
+        // Fetch sort options and set default
+        const sortRes = await axios.get(`${BASE_URL}/sort-options`);
+        const sortOptions = sortRes.data;
+        setSortBy(sortOptions.length > 0 ? sortOptions[0].value : "newest"); // Set first sort option as default
+
+        // Fetch templates
+       //const templatesRes = await axios.get(`${BASE_URL}/all-templates`);
+       //setallTemplates(templatesRes.data.map(t => ({ ...t, id: `new-${t.id}` })));
+       const templatesRes = await axios.get(`${BASE_URL}/all-templates`);
+       const templates = templatesRes.data.map(t => ({ ...t, id: `new-${t.id}` }));
+       setallTemplates(templates);
+       setFilteredTemplates(templates);
+        // Fetch categories and set default
+              } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+  
   
   // Filter options
   const [showFreeOnly, setShowFreeOnly] = useState(false);

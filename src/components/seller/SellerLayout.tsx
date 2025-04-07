@@ -15,8 +15,10 @@ import {
   Upload,
   Wallet,
 } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
 
 const SellerLayout = () => {
+  const { logout } = useAuth();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -126,7 +128,7 @@ const SellerLayout = () => {
                 <Button variant="ghost" className="w-full justify-start" asChild>
                   <Link to="/seller/help">Help Center</Link>
                 </Button>
-                <Button variant="ghost" className="w-full justify-start">
+                <Button onClick={logout} variant="ghost" className="w-full justify-start">
                   Logout
                 </Button>
               </div>
