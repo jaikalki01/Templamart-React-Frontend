@@ -95,7 +95,7 @@ const UploadTemplate = () => {
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/prouct/create-product`, {
+      const response = await fetch(`${BASE_URL}/product/create-product`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${user.token}`,

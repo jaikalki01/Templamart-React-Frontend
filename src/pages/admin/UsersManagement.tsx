@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+//import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { UserPlus, Search, MoreHorizontal, UserX } from "lucide-react";
-
+import { useAuth } from "@/context/auth-context";
+import axios from "axios";
+import { BASE_URL } from "@/config";
+import { useState, useEffect } from "react";
 interface User {
   id: string;
   name: string;
@@ -67,7 +70,30 @@ const UsersManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`${BASE_URL}/admin/users`, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        setUsers(res.data);
+        
+        
+      } catch (err: any) {
+        setError("Failed to load dashboard data.");
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    useEffect(() => {
+      fetchData();
+    }, []);
   const filteredUsers = users.filter(user => 
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     user.email.toLowerCase().includes(searchQuery.toLowerCase())

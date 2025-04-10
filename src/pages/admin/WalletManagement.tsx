@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,17 +7,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-
+import axios from "axios";
+import { BASE_URL } from "@/config";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/auth-context";
 interface PayoutRequest {
   id: string;
   sellerId: string;
   sellerName: string;
   amount: number;
   requestDate: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "completed" | "rejected"| "approved" | "failed";
   paymentMethod: string;
 }
-
+interface Wallet {
+  totalWalletBalance: number;
+}
 const mockPayoutRequests: PayoutRequest[] = [
   {
     id: "pr1",
@@ -59,13 +63,54 @@ const mockPayoutRequests: PayoutRequest[] = [
 ];
 
 const WalletManagement = () => {
-  const [payoutRequests, setPayoutRequests] = useState<PayoutRequest[]>(mockPayoutRequests);
+  const [payoutRequests, setPayoutRequests] = useState<PayoutRequest[]>([]);
   const [commissionRate, setCommissionRate] = useState("30");
   const [isCommissionDialogOpen, setIsCommissionDialogOpen] = useState(false);
   const [selectedPayout, setSelectedPayout] = useState<PayoutRequest | null>(null);
   const [isPayoutDialogOpen, setIsPayoutDialogOpen] = useState(false);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchSales = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/admin/payout-requests`,
+              { headers: { Authorization: `Bearer ${user.token}` },}
+         );
+         setPayoutRequests(response.data);
+      }
+      
+      
+      catch (error) {
+        console.error("Failed to fetch sales:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const totalWalletBalance = 12450.75;
+    fetchSales();
+  }, []);
+  //const totalWalletBalance = 12450.75;
+  //const [totalWalletBalance1, settotalWalletBalance] = useState<Wallet[]>([]);
+  const [totalWalletBalance, setTotalWalletBalance] = useState(0);
+
+  useEffect(() => {
+    const fetchWalletBalance = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/admin/total-wallet-balance`, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        setTotalWalletBalance(response.data.total_balance);
+      } catch (error) {
+        console.error("Failed to fetch wallet balance:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchWalletBalance();
+  }, []);
+  
   const pendingPayouts = payoutRequests
     .filter(req => req.status === "pending")
     .reduce((total, req) => total + req.amount, 0);
@@ -84,28 +129,49 @@ const WalletManagement = () => {
     setIsCommissionDialogOpen(false);
   };
 
-  const handlePayoutAction = (action: "approve" | "reject") => {
+  const handlePayoutAction = async (action: "approve" | "reject") => {
     if (!selectedPayout) return;
-    
-    setPayoutRequests(prev => 
-      prev.map(req => 
-        req.id === selectedPayout.id 
-          ? { ...req, status: action === "approve" ? "approved" : "rejected" } 
-          : req
-      )
-    );
-    
-    toast.success(
-      action === "approve" 
-        ? "Payout request approved" 
-        : "Payout request rejected", 
-      {
-        description: action === "approve" 
-          ? `Payout of $${selectedPayout.amount.toFixed(2)} to ${selectedPayout.sellerName} has been approved` 
-          : `Payout request from ${selectedPayout.sellerName} has been rejected`
-      }
-    );
-    
+  
+    try {
+      await axios.post(
+        `${BASE_URL}/admin/payout-action`,
+        {
+          payout_id: selectedPayout.id,
+          action: action
+        },
+        {
+          headers: {
+           Authorization: `Bearer ${user.token}`
+          }
+        }
+      );
+  
+      setPayoutRequests(prev =>
+        prev.map(req =>
+          req.id === selectedPayout.id
+            ? { ...req, status: action === "approve" ? "approved" : "rejected" }
+            : req
+        )
+      );
+  
+      toast.success(
+        action === "approve"
+          ? "Payout request approved"
+          : "Payout request rejected",
+        {
+          description:
+            action === "approve"
+              ? `Payout of ₹${selectedPayout.amount.toFixed(2)} to ${selectedPayout.sellerName} has been approved`
+              : `Payout request from ${selectedPayout.sellerName} has been rejected`
+        }
+      );
+    } catch (error) {
+      console.error("Failed to update payout status", error);
+      toast.error("Action failed", {
+        description: error?.response?.data?.detail || "Server error"
+      });
+    }
+  
     setIsPayoutDialogOpen(false);
     setSelectedPayout(null);
   };
@@ -263,7 +329,7 @@ const WalletManagement = () => {
             <CardContent>
               <div className="space-y-4">
                 {payoutRequests
-                  .filter(req => req.status === "approved")
+                  .filter(req => req.status === "completed")
                   .map((request) => (
                     <div
                       key={request.id}

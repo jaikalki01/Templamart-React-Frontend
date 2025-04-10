@@ -1,5 +1,3 @@
-
-import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,7 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Edit, Trash2, Plus, FileText } from "lucide-react";
-
+import { useAuth } from "@/context/auth-context";
+import axios from "axios";
+import { BASE_URL } from "@/config";
+import { useState, useEffect } from "react";
 interface Category {
   id: string;
   name: string;
@@ -68,7 +69,30 @@ const CategoriesManagement = () => {
   const [isEditCategoryDialogOpen, setIsEditCategoryDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`${BASE_URL}/admin/categories`, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        setCategories(res.data);
+        
+        
+      } catch (err: any) {
+        setError("Failed to load dashboard data.");
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
   
+    useEffect(() => {
+      fetchData();
+    }, []);
   // Form state for new category
   const [newCategory, setNewCategory] = useState({
     name: "",
@@ -108,79 +132,155 @@ const CategoriesManagement = () => {
     });
   };
 
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     if (!newCategory.name) {
       toast.error("Category name is required");
       return;
     }
-    
-    const newId = `c${categories.length + 1}`;
-    const categoryToAdd = {
-      id: newId,
+  
+    const categoryToSend = {
       name: newCategory.name,
       slug: newCategory.slug || generateSlug(newCategory.name),
       description: newCategory.description,
-      templateCount: 0,
-      featured: newCategory.featured
+      featured: newCategory.featured,
     };
-    
-    setCategories([...categories, categoryToAdd]);
-    setNewCategory({
-      name: "",
-      slug: "",
-      description: "",
-      featured: false
-    });
-    
-    toast.success("Category added", {
-      description: `${categoryToAdd.name} has been added to categories`
-    });
-    
-    setIsNewCategoryDialogOpen(false);
+  
+    try {
+      const response = await fetch(`${BASE_URL}/admin/categories`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(categoryToSend),
+      });
+  
+      if (response.ok) {
+        const savedCategory = await response.json(); // Assume API returns the new category
+        
+        setCategories([...categories, savedCategory]);
+        toast.success("Category added", {
+          description: `${savedCategory.name} has been added to categories`,
+        });
+  
+        // Reset form
+        setNewCategory({
+          name: "",
+          slug: "",
+          description: "",
+          featured: false,
+        });
+  
+        setIsNewCategoryDialogOpen(false);
+  
+      } else {
+        const errorData = await response.json();
+        toast.error("Add category failed!", {
+          description: errorData.detail || "Please check your input.",
+        });
+      }
+  
+    } catch (error) {
+      console.error(error);
+      toast.error("Network error!", {
+        description: "Please try again later.",
+      });
+    }
   };
+  
 
-  const handleUpdateCategory = () => {
+  const handleUpdateCategory = async () => {
     if (!selectedCategory || !editCategory.name) {
       toast.error("Category name is required");
       return;
     }
-    
-    setCategories(prevCategories => 
-      prevCategories.map(category => 
-        category.id === selectedCategory.id
-          ? {
-              ...category,
-              name: editCategory.name,
-              slug: editCategory.slug || generateSlug(editCategory.name),
-              description: editCategory.description,
-              featured: editCategory.featured
-            }
-          : category
-      )
-    );
-    
-    toast.success("Category updated", {
-      description: `${editCategory.name} has been updated`
-    });
-    
-    setIsEditCategoryDialogOpen(false);
+  
+    const updatedData = {
+      name: editCategory.name,
+      slug: editCategory.slug || generateSlug(editCategory.name),
+      description: editCategory.description,
+      featured: editCategory.featured,
+    };
+  
+    try {
+      const response = await fetch(`${BASE_URL}/admin/categories/${selectedCategory.id}`, {
+        method: "PUT", // or "PATCH" based on your API
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(updatedData),
+      });
+  
+      if (response.ok) {
+        const updatedCategory = await response.json(); // Assuming the API returns the updated category
+  
+        setCategories(prevCategories =>
+          prevCategories.map(category =>
+            category.id === selectedCategory.id ? updatedCategory : category
+          )
+        );
+  
+        toast.success("Category updated", {
+          description: `${updatedCategory.name} has been updated`,
+        });
+  
+        setIsEditCategoryDialogOpen(false);
+      } else {
+        const errorData = await response.json();
+        toast.error("Update failed", {
+          description: errorData.detail || "Please check your input.",
+        });
+      }
+  
+    } catch (error) {
+      console.error(error);
+      toast.error("Network error", {
+        description: "Please try again later.",
+      });
+    }
   };
-
-  const handleDeleteCategory = () => {
+  
+  const handleDeleteCategory = async () => {
     if (!selectedCategory) return;
-    
-    setCategories(prevCategories => 
-      prevCategories.filter(category => category.id !== selectedCategory.id)
-    );
-    
-    toast.success("Category deleted", {
-      description: `${selectedCategory.name} has been deleted`
-    });
-    
-    setIsDeleteDialogOpen(false);
-    setSelectedCategory(null);
+  
+    try {
+      const response = await fetch(`${BASE_URL}/admin/categories/${selectedCategory.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          Accept: "application/json",
+        },
+      });
+  
+      if (response.ok) {
+        setCategories(prevCategories =>
+          prevCategories.filter(category => category.id !== selectedCategory.id)
+        );
+  
+        toast.success("Category deleted", {
+          description: `${selectedCategory.name} has been deleted`,
+        });
+  
+        setIsDeleteDialogOpen(false);
+        setSelectedCategory(null);
+      } else {
+        const errorData = await response.json();
+        toast.error("Delete failed", {
+          description: errorData.detail || "Unable to delete category.",
+        });
+      }
+  
+    } catch (error) {
+      console.error(error);
+      toast.error("Network error", {
+        description: "Please try again later.",
+      });
+    }
   };
-
+  
   const handleEditClick = (category: Category) => {
     setSelectedCategory(category);
     setEditCategory({
@@ -440,7 +540,7 @@ const CategoriesManagement = () => {
         </Dialog>
       )}
     </div>
-  );
+  ); 
 };
 
 export default CategoriesManagement;

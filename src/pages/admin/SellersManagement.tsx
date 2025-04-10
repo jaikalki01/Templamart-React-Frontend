@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Search, MoreHorizontal, ShieldAlert, CheckCircle } from "lucide-react";
-
+import { useAuth } from "@/context/auth-context";
+import axios from "axios";
+import { BASE_URL } from "@/config";
+import { useState, useEffect } from "react";
 interface Seller {
   id: string;
   name: string;
@@ -74,10 +76,35 @@ const mockSellers: Seller[] = [
 ];
 
 const SellersManagement = () => {
-  const [sellers, setSellers] = useState<Seller[]>(mockSellers);
+  //const [mockSellers, setmockSellers] = useState<Seller[]>([]);
+  const [sellers, setSellers] = useState<Seller[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
   const [isSellerDialogOpen, setIsSellerDialogOpen] = useState(false);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+      const fetchData = async () => {
+        try {
+          setLoading(true);
+          const res = await axios.get(`${BASE_URL}/admin/sellers`, {
+            headers: { Authorization: `Bearer ${user.token}` },
+          });
+          setSellers(res.data);
+          //setmockSellers(res.data);
+          //setSelectedSeller(res.data);
+        } catch (err: any) {
+          setError("Failed to load dashboard data.");
+          console.error("Error fetching dashboard data:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+    
+      useEffect(() => {
+        fetchData();
+      }, []);
 
   const filteredSellers = sellers.filter(seller => 
     seller.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -210,6 +237,7 @@ const SellersManagement = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                
                 {/* Similar layout as "all" tab but filtered for approved sellers */}
                 {filteredSellers.filter(seller => seller.status === "approved").length === 0 && (
                   <div className="py-6 text-center text-muted-foreground">

@@ -34,104 +34,69 @@ import axios from "axios";
 import { BASE_URL } from "@/config";
 // Mock template data
 
-const mockTemplates = [
-  {
-    id: "1",
-    title: "Modern Dashboard UI Kit",
-    category: "UI Kits",
-    price: 49.99,
-    sales: 245,
-    revenue: 12247.55,
-    status: "active",
-    thumbnail: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&q=80",
-    created: "2023-01-15",
-  },
-  {
-    id: "2",
-    title: "E-commerce Website Template",
-    category: "Website Templates",
-    price: 69.99,
-    sales: 189,
-    revenue: 13228.11,
-    status: "active",
-    thumbnail: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80",
-    created: "2023-02-10",
-  },
-  {
-    id: "3",
-    title: "Business Presentation Template",
-    category: "Presentations",
-    price: 29.99,
-    sales: 320,
-    revenue: 9596.80,
-    status: "pending",
-    thumbnail: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=800&q=80",
-    created: "2023-03-05",
-  },
-  {
-    id: "4",
-    title: "Email Marketing Template",
-    category: "Email Templates",
-    price: 19.99,
-    sales: 178,
-    revenue: 3558.22,
-    status: "active",
-    thumbnail: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=80",
-    created: "2023-04-20",
-  },
-];
+
+interface Template {
+  id: string;
+  title: string;
+  category: string;
+  price: number;
+  sales: number;
+  revenue: number;
+  status: string;
+  thumbnail: string;
+  created: string;
+}
 
 const SellerTemplates = () => {
-  const [templates, setTemplates] = useState([]);
+  const { user } = useAuth();
+  const [allTemplates, setAllTemplates] = useState<Template[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
-  const { user } = useAuth(); // ✅ Get token and role
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [totalTemplates, setTotalTemplates] = useState(0);
 
-  useEffect(() => {
-      const fetchData = async () => {
-        try {
-        const templatesRes = await axios.get(`${BASE_URL}/seller/products`, {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        });
-         const templates1 = templatesRes.data.map(t => ({ ...t, id: `new-${t.id}` }));
-         setTemplates(templates1);
-         
-          // Fetch categories and set default
-                } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      };
-  
-      fetchData();
-    }, []);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Filter templates based on search query
-    filterTemplates();
+  const fetchData = async () => {
+    try {
+      const offset = (currentPage - 1) * itemsPerPage;
+      const res = await axios.get(`${BASE_URL}/seller/products`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+        params: { limit: itemsPerPage, offset },
+      });
+      const mapped = res.data.map((t: Template) => ({ ...t, id: `new-${t.id}` }));
+      setAllTemplates(mapped);
+      setTemplates(mapped); // Initial unfiltered
+      setTotalTemplates(res.data.length); // You can return count from backend for exact page handling
+    } catch (err) {
+      console.error("Error fetching templates:", err);
+    }
   };
 
-  const filterTemplates = () => {
-    let filtered = [...mockTemplates];
+  useEffect(() => {
+    fetchData();
+  }, [currentPage]);
 
-    // Apply search filter
+  useEffect(() => {
+    filterTemplates();
+  }, [searchQuery, statusFilter, sortBy]);
+
+  const filterTemplates = () => {
+    let filtered = [...allTemplates];
+
     if (searchQuery) {
       filtered = filtered.filter(
-        (template) =>
-          template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          template.category.toLowerCase().includes(searchQuery.toLowerCase())
+        (t) =>
+          t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          t.category.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // Apply status filter
     if (statusFilter !== "all") {
-      filtered = filtered.filter((template) => template.status === statusFilter);
+      filtered = filtered.filter((t) => t.status === statusFilter);
     }
 
-    // Apply sorting
     switch (sortBy) {
       case "price-asc":
         filtered.sort((a, b) => a.price - b.price);
@@ -146,35 +111,23 @@ const SellerTemplates = () => {
         filtered.sort((a, b) => b.revenue - a.revenue);
         break;
       case "oldest":
-        filtered.sort(
-          (a, b) => new Date(a.created).getTime() - new Date(b.created).getTime()
-        );
+        filtered.sort((a, b) => new Date(a.created).getTime() - new Date(b.created).getTime());
         break;
       case "newest":
       default:
-        filtered.sort(
-          (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()
-        );
+        filtered.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
         break;
     }
 
     setTemplates(filtered);
   };
 
-  const handleStatusChange = (value: string) => {
-    setStatusFilter(value);
-    setTimeout(filterTemplates, 0);
-  };
-
-  const handleSortChange = (value: string) => {
-    setSortBy(value);
-    setTimeout(filterTemplates, 0);
-  };
-
   const handleDeleteTemplate = (id: string) => {
-    setTemplates(templates.filter((template) => template.id !== id));
+    setTemplates((prev) => prev.filter((t) => t.id !== id));
     toast.success("Template deleted successfully");
   };
+
+  const totalPages = Math.ceil(totalTemplates / itemsPerPage);
 
   return (
     <div className="space-y-6">
@@ -186,38 +139,30 @@ const SellerTemplates = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <form onSubmit={handleSearch} className="flex space-x-2">
+        <form onSubmit={(e) => e.preventDefault()} className="flex space-x-2">
           <Input
             placeholder="Search templates..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="max-w-xs"
           />
-          <Button type="submit">Search</Button>
         </form>
-
-        <div className="flex gap-2">
-          <Button asChild>
-            <Link to="/seller/templates/new">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Template
-            </Link>
-          </Button>
-        </div>
+        <Button asChild>
+          <Link to="/seller/templates/new">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Template
+          </Link>
+        </Button>
       </div>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border rounded-lg bg-muted/30">
         <div className="space-y-1">
           <h3 className="font-medium">Template Filters</h3>
-          <p className="text-sm text-muted-foreground">
-            Filter and sort your templates
-          </p>
+          <p className="text-sm text-muted-foreground">Filter and sort your templates</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <Select value={statusFilter} onValueChange={handleStatusChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger><SelectValue placeholder="Filter by status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Templates</SelectItem>
               <SelectItem value="active">Active</SelectItem>
@@ -226,10 +171,8 @@ const SellerTemplates = () => {
             </SelectContent>
           </Select>
 
-          <Select value={sortBy} onValueChange={handleSortChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger><SelectValue placeholder="Sort by" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="newest">Newest</SelectItem>
               <SelectItem value="oldest">Oldest</SelectItem>
@@ -248,11 +191,7 @@ const SellerTemplates = () => {
             <Card key={template.id}>
               <div className="flex flex-col md:flex-row">
                 <div className="md:w-64 h-48 overflow-hidden rounded-t-lg md:rounded-l-lg md:rounded-tr-none">
-                  <img
-                    src={template.thumbnail}
-                    alt={template.title}
-                    className="h-full w-full object-cover"
-                  />
+                  <img src={template.thumbnail} alt={template.title} className="h-full w-full object-cover" />
                 </div>
                 <div className="flex-1">
                   <CardHeader className="pb-2">
@@ -263,20 +202,14 @@ const SellerTemplates = () => {
                           {template.category} • Created on {template.created}
                         </CardDescription>
                       </div>
-                      <Badge
-                        className={`${
-                          template.status === "active"
-                            ? "bg-green-100 text-green-800"
-                            : template.status === "pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {template.status === "active"
-                          ? "Active"
+                      <Badge className={
+                        template.status === "active"
+                          ? "bg-green-100 text-green-800"
                           : template.status === "pending"
-                          ? "Pending Review"
-                          : "Rejected"}
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                      }>
+                        {template.status === "active" ? "Active" : template.status === "pending" ? "Pending Review" : "Rejected"}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -319,15 +252,12 @@ const SellerTemplates = () => {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm">
                           <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">More</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem asChild>
-                          <Link to={`/seller/templates/analytics/${template.id}`}>
-                            View Analytics
-                          </Link>
+                          <Link to={`/seller/templates/analytics/${template.id}`}>View Analytics</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem>Duplicate</DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -347,19 +277,8 @@ const SellerTemplates = () => {
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="rounded-full bg-muted p-6">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-12 w-12 text-muted-foreground"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </div>
             <h2 className="mt-4 text-xl font-semibold">No templates found</h2>
@@ -373,6 +292,25 @@ const SellerTemplates = () => {
             </Button>
           </div>
         )}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        <Button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </Button>
+        <span className="text-sm text-muted-foreground">
+          Page {currentPage} of {totalPages}
+        </span>
+        <Button
+          onClick={() => setCurrentPage((prev) => prev + 1)}
+          disabled={templates.length < itemsPerPage}
+        >
+          Next
+        </Button>
       </div>
     </div>
   );

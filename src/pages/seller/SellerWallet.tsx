@@ -1,5 +1,3 @@
-
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,7 +5,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-
+import { useAuth } from "@/context/auth-context";
+import axios from "axios";
+import { BASE_URL } from "@/config";
+import { useState, useEffect } from "react";
 interface Transaction {
   id: string;
   date: string;
@@ -61,11 +62,33 @@ const mockTransactions: Transaction[] = [
 ];
 
 const SellerWallet = () => {
-  const [transactions] = useState<Transaction[]>(mockTransactions);
+  //const [transactions] = useState<Transaction[]>(mockTransactions);
   const [payoutAmount, setPayoutAmount] = useState("");
   const [payoutMethod, setPayoutMethod] = useState("paypal");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [transactions, settransactions] = useState<Transaction[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
+  const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`${BASE_URL}/seller/wallet/transactions`, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        settransactions(res.data);
+      } catch (err: any) {
+        setError("Failed to load dashboard data.");
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    useEffect(() => {
+      fetchData();
+    }, []);
   const walletBalance = transactions
     .reduce((total, tx) => total + tx.amount, 0)
     .toFixed(2);
@@ -80,24 +103,46 @@ const SellerWallet = () => {
     .reduce((total, tx) => total + tx.amount, 0)
     .toFixed(2);
 
-  const handlePayoutRequest = () => {
-    if (!payoutAmount || Number(payoutAmount) <= 0) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
+    const handlePayoutRequest = async () => {
+      if (!payoutAmount || Number(payoutAmount) <= 0) {
+        toast.error("Please enter a valid amount");
+        return;
+      }
     
-    if (Number(payoutAmount) > Number(availableBalance)) {
-      toast.error("Payout amount exceeds available balance");
-      return;
-    }
+      if (Number(payoutAmount) > Number(availableBalance)) {
+        toast.error("Payout amount exceeds available balance");
+        return;
+      }
     
-    toast.success("Payout request submitted", {
-      description: `Your payout request for $${payoutAmount} has been submitted and is pending approval.`
-    });
+      try {
+        const response = await axios.post(
+          `${BASE_URL}/seller/payout-request`, // Make sure this matches your FastAPI route
+          {
+            amount: Number(payoutAmount)
+          },
+          {
+            headers: {
+               Authorization: `Bearer ${user.token}` 
+              //Authorization: `Bearer ${localStorage.getItem("token")}` // If you're using JWT auth
+            }
+          }
+        );
     
-    setIsDialogOpen(false);
-    setPayoutAmount("");
-  };
+        toast.success("Payout request submitted", {
+          description: `Your payout request for ₹${payoutAmount} has been submitted and is pending approval.`
+        });
+    
+        setIsDialogOpen(false);
+        setPayoutAmount("");
+      } catch (error) {
+        console.error(error);
+        const message =
+          error?.response?.data?.detail || "Something went wrong. Please try again.";
+        toast.error("Failed to request payout", {
+          description: message
+        });
+      }
+    };
 
   return (
     <div className="space-y-6">

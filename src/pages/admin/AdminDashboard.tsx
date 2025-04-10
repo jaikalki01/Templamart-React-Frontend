@@ -3,8 +3,46 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, LineChart, PieChart } from "@/components/ui/charts";
 import { DollarSign, Users, ShoppingBag, Package } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
+import axios from "axios";
+import { BASE_URL } from "@/config";
+import { useState, useEffect } from "react";
+
+
 
 const AdminDashboard = () => {
+
+  interface DashboardData {
+    revenue: number;
+    users: number;
+    templates: number;
+    sales: number;
+    activeTemplates: number;
+  }
+  
+    const { user } = useAuth();
+    const [loading, setLoading] = useState(true);
+    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+    const [error, setError] = useState<string | null>(null);
+  
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`${BASE_URL}/admin/dashboard`, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        setDashboardData(res.data);
+      } catch (err: any) {
+        setError("Failed to load dashboard data.");
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    useEffect(() => {
+      fetchData();
+    }, []);
   return (
     <div className="space-y-6">
       <div>
@@ -21,7 +59,7 @@ const AdminDashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
+            <div className="text-2xl font-bold">{loading ? "Loading..." : `$${dashboardData?.revenue.toFixed(2)}`}</div>
             <p className="text-xs text-muted-foreground">
               +20.1% from last month
             </p>
@@ -33,7 +71,7 @@ const AdminDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+12,234</div>
+            <div className="text-2xl font-bold">{loading ? "Loading..." : `+${dashboardData?.users}`}</div>
             <p className="text-xs text-muted-foreground">
               +180.1% from last month
             </p>
@@ -45,7 +83,7 @@ const AdminDashboard = () => {
             <ShoppingBag className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+573</div>
+            <div className="text-2xl font-bold">{loading ? "Loading..." : `+${dashboardData?.sales}`}</div>
             <p className="text-xs text-muted-foreground">
               +201 from last month
             </p>
@@ -53,13 +91,13 @@ const AdminDashboard = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Templates</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Templates</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">152</div>
+            <div className="text-2xl font-bold">{loading ? "Loading..." : `+${dashboardData?.activeTemplates}`}</div>
             <p className="text-xs text-muted-foreground">
-              +32 this month
+              Total Templates: {loading ? "Loading..." : `${dashboardData?.templates}`}
             </p>
           </CardContent>
         </Card>

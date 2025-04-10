@@ -1,5 +1,3 @@
-
-import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,7 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Download, FileText, Calendar, MoreHorizontal } from "lucide-react";
-
+import { useAuth } from "@/context/auth-context";
+import axios from "axios";
+import { BASE_URL } from "@/config";
+import { useState, useEffect } from "react";
 interface Sale {
   id: string;
   templateName: string;
@@ -104,12 +105,31 @@ const mockSales: Sale[] = [
 ];
 
 const SalesManagement = () => {
-  const [sales, setSales] = useState<Sale[]>(mockSales);
+  const [sales, setSales] = useState<Sale[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTimeframe, setFilterTimeframe] = useState("all");
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [isSaleDialogOpen, setIsSaleDialogOpen] = useState(false);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const fetchSales = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/admin/sales`,
+          { headers: { Authorization: `Bearer ${user.token}` },}
+         );
+        setSales(response.data);
+      } catch (error) {
+        console.error("Failed to fetch sales:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSales();
+  }, []);
   const filteredSales = sales.filter(sale => {
     // Search filter
     const matchesSearch = 

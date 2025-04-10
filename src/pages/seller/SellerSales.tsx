@@ -1,5 +1,3 @@
-
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,9 +27,25 @@ import {
   DollarSign,
   Users,
 } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
+import axios from "axios";
+import { BASE_URL } from "@/config";
+import { useState, useEffect } from "react";
 
-// Mock sales data
-const salesData = [
+interface DashboardData {
+  id: string;
+  customer: string;
+  email: string;
+  date: string;
+  template: string;
+  amount: number;
+  commission: number;
+  earning: number;
+  status: 'pending' | 'completed' | 'failed';
+}
+
+// ✅ Mock sales data
+const salesData: DashboardData[] =  [
   {
     id: "sale-001",
     customer: "John Smith",
@@ -101,6 +115,30 @@ const salesData = [
 ];
 
 const SellerSales = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [salesData, setSalesData] = useState<DashboardData[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${BASE_URL}/seller/purchases`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      setSalesData(res.data);
+    } catch (err: any) {
+      setError("Failed to load dashboard data.");
+      console.error("Error fetching dashboard data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   const [period, setPeriod] = useState("30days");
   const [searchQuery, setSearchQuery] = useState("");
   

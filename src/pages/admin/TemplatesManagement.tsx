@@ -1,5 +1,3 @@
-
-import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,7 +8,10 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Search, MoreHorizontal, Eye, FileX } from "lucide-react";
-
+import { useAuth } from "@/context/auth-context";
+import axios from "axios";
+import { BASE_URL } from "@/config";
+import { useState, useEffect } from "react";
 interface Template {
   id: string;
   name: string;
@@ -88,10 +89,34 @@ const mockTemplates: Template[] = [
 ];
 
 const TemplatesManagement = () => {
-  const [templates, setTemplates] = useState<Template[]>(mockTemplates);
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+      const fetchData = async () => {
+        try {
+          setLoading(true);
+          const res = await axios.get(`${BASE_URL}/admin/templates`, {
+            headers: { Authorization: `Bearer ${user.token}` },
+          });
+          setTemplates(res.data);
+          //setmockSellers(res.data);
+          //setSelectedSeller(res.data);
+        } catch (err: any) {
+          setError("Failed to load dashboard data.");
+          console.error("Error fetching dashboard data:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+    
+      useEffect(() => {
+        fetchData();
+      }, []);
 
   const filteredTemplates = templates.filter(template => 
     template.name.toLowerCase().includes(searchQuery.toLowerCase()) || 

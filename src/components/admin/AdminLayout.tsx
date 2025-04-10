@@ -16,9 +16,11 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
 
 const AdminLayout = () => {
   const location = useLocation();
+  const { logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const navigationItems = [
@@ -131,9 +133,9 @@ const AdminLayout = () => {
             <Separator className="my-4" />
             <div className="px-3 py-2">
               <div className="space-y-1">
-                <Button variant="ghost" className="w-full justify-start">
-                  Logout
-                </Button>
+                 <Button onClick={logout} variant="ghost" className="w-full justify-start">
+                                  Logout
+                                </Button>
               </div>
             </div>
           </ScrollArea>

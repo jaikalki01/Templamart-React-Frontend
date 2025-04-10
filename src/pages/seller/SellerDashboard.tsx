@@ -3,8 +3,48 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, LineChart, PieChart } from "@/components/ui/charts";
 import { ArrowUpRight, DollarSign, Package, Users } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
+import axios from "axios";
+import { BASE_URL } from "@/config";
+import { useState, useEffect } from "react";
+
+interface DashboardData {
+  revenue: number;
+  sales: number;
+  activeTemplates: number;
+}
+
+
+
+
 
 const SellerDashboard = () => {
+
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${BASE_URL}/seller/dashboard`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      setDashboardData(res.data);
+    } catch (err: any) {
+      setError("Failed to load dashboard data.");
+      console.error("Error fetching dashboard data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+
   return (
     <div className="space-y-6">
       <div>
@@ -21,7 +61,7 @@ const SellerDashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$4,231.89</div>
+            <div className="text-2xl font-bold">$ {loading ? "Loading..." : `$${dashboardData?.revenue.toFixed(2)}`}</div>
             <p className="text-xs text-muted-foreground">
               +20.1% from last month
             </p>
@@ -33,7 +73,7 @@ const SellerDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+2,350</div>
+            <div className="text-2xl font-bold">{loading ? "Loading..." : `+${dashboardData?.sales}`}</div>
             <p className="text-xs text-muted-foreground">
               +180.1% from last month
             </p>
@@ -45,7 +85,7 @@ const SellerDashboard = () => {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold"> {loading ? "Loading..." : dashboardData?.activeTemplates}</div>
             <p className="text-xs text-muted-foreground">
               +3 new this month
             </p>
@@ -228,3 +268,5 @@ const SellerDashboard = () => {
 };
 
 export default SellerDashboard;
+
+
