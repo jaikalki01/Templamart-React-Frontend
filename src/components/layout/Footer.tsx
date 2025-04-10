@@ -10,7 +10,7 @@ const Footer = () => {
           <div className="space-y-3">
             {/* <h3 className="text-lg font-medium">TemplaMarT</h3> */}
             <Link to="/" className="flex items-center space-x-2"> 
-          <img src={logo} alt="this is logo of company" width={50} />
+          <img src={logo} alt="this is logo of company" width={120} />
        
             {/* <span className="text-xl font-bold text-primary">TemplaMarT</span> */}
           </Link>
