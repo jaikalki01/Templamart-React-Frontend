@@ -21,9 +21,9 @@ import Wishlist from "@/pages/Wishlist";
 import Pricing from "@/pages/Pricing";
 import BecomeSeller from "@/pages/BecomeSeller";
 import TemplatesPage from "@/pages/templates/TemplatesPage";
-import TemplateDetails from "@/pages/templates/TemplateDetails2";
+import TemplateDetails from "@/pages/templates/TemplateDetails";
 import CategoryPage from "@/pages/categories/CategoryPage";
-import UserAccount from "@/pages/account/UserAccount";
+import UserAccount from "@/pages/UserAccount";
 import NotFound from "@/pages/NotFound";
 import Terms from "@/pages/Terms-condition";
 import RefundPolicy from "@/pages/RefundPolicy";
@@ -78,20 +78,11 @@ const App = () => (
                 <Route path="/refund" element={<RefundPolicy />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/license" element={<LicenseAgreement />} />
+                <Route path="account" element={<UserAccount />} />
               </Route>
 
               {/* Seller Dashboard Routes */}
-              <Route
-                path="/account/*"
-                element={
-                  <ProtectedRoute allowedRoles={[1,2,3]}>
-                    <UserAccount />
-                  </ProtectedRoute>
-                }
-              >
-                <Route path="account" element={<UserAccount />} />
-               
-              </Route>
+            
               <Route
                 path="/seller/*"
                 element={

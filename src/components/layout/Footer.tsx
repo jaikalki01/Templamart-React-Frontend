@@ -9,11 +9,10 @@ const Footer = () => {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="space-y-3">
             {/* <h3 className="text-lg font-medium">TemplaMarT</h3> */}
-            <Link to="/" className="flex items-center space-x-2"> 
-          <img src={logo} alt="this is logo of company" width={50} />
-       
-            {/* <span className="text-xl font-bold text-primary">TemplaMarT</span> */}
-          </Link>
+            <Link to="/" className="flex items-center ">
+  <img src={logo} alt="T logo" className="w-[50px] -mr-4" />
+  <span className="text-xl font-bold text-primary">emplaMarT</span>
+</Link>
             <p className="text-sm text-muted-foreground">
               The marketplace for high-quality templates and digital assets for professionals.
             </p>

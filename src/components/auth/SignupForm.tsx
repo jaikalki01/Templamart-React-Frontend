@@ -13,38 +13,57 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-
+import axios from "axios";
+import { BASE_URL, DOMAIN } from "@/config";
 const SignupForm = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [phone_number, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [becomeSeller, setBecomeSeller] = useState(false);
+  //const [becomeSeller, setBecomeSeller] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false); // Renamed
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+  
     if (password !== confirmPassword) {
       alert("Passwords don't match");
       return;
     }
-    
+  
     setIsLoading(true);
-    
-    // Mock signup - to be replaced with actual authentication
-    setTimeout(() => {
-      console.log("Signup with:", { name, email, password, becomeSeller });
+  
+    try {
+      const response = await axios.post(`${BASE_URL}/users/signUp`, {
+        username,
+        email,
+        full_name: name,
+        phone_number, // If you don’t collect this, use a default or add a phone field
+        password
+      });
+  
+      //console.log('Signup successful:', response.data);
+  
+      //console.log('Signup successful:', response.data);
+
+      alert("Signup successful! Redirecting to login...");
+  
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000); // Wait 2 seconds before navigating
+  
+    } catch (error: any) {
+      console.error('Signup failed:', error.response?.data || error.message);
+      alert("Signup failed: " + (error.response?.data?.detail || error.message));
+    } finally {
       setIsLoading(false);
-      
-      if (becomeSeller) {
-        navigate("/seller/onboarding");
-      } else {
-        navigate("/");
-      }
-    }, 1000);
+    }
   };
+  
 
   return (
     <Card className="mx-auto max-w-md">
@@ -78,6 +97,28 @@ const SignupForm = () => {
             />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
+              placeholder="Enter your Username"
+              value={username}
+              
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone_number">Mobile No.</Label>
+            <Input
+              id="phone_number"
+              placeholder="Enter your Mobile No."
+              value={phone_number}
+              
+              onChange={(e) => setMobile(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
@@ -101,17 +142,25 @@ const SignupForm = () => {
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox
-              id="becomeSeller"
-              checked={becomeSeller}
-              onCheckedChange={(checked) => setBecomeSeller(checked as boolean)}
+              id="terms"
+              checked={agreedToTerms}
+              onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
             />
-            <Label htmlFor="becomeSeller" className="text-sm">
-              I want to become a seller and sell templates
+            <Label htmlFor="terms" className="text-sm">
+              I agree to the{" "}
+              <a
+                href="/terms"
+                className="text-blue-600 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Terms and Conditions
+              </a>
             </Label>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button type="submit" className="w-full" disabled={isLoading || !agreedToTerms}>
             {isLoading ? "Creating account..." : "Create Account"}
           </Button>
           <div className="text-center text-sm">

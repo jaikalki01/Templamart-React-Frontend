@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/select";
 import TemplateGrid from "@/components/templates/TemplateGrid";
 import { TemplateProps } from "@/components/templates/TemplateCard";
-
+import axios from "axios";
+import { BASE_URL } from "@/config";
 // Mock template data - in a real app, this would come from an API
 const allTemplates: TemplateProps[] = [
   {
@@ -120,69 +121,74 @@ const sortOptions = [
 
 const CategoryPage = () => {
   const { slug } = useParams<{ slug: string }>();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("newest");
+  //const [searchQuery, setSearchQuery] = useState("");
+  //const [sortBy, setSortBy] = useState("newest");
   const [templates, setTemplates] = useState<TemplateProps[]>([]);
+  const [allTemplates, setAllTemplates] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [category, setCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [limit, setLimit] = useState(48);
+  const [offset, setOffset] = useState(0);
+  const [totalTemplates, setTotalTemplates] = useState(0);
+  const [sortOptions, setSortOptions] = useState([]);
   const categoryName = slug ? categoryMap[slug] : "";
-  
   useEffect(() => {
-    if (slug && categoryMap[slug]) {
-      // Filter templates by category
-      const filtered = allTemplates.filter(
-        template => template.category === categoryMap[slug]
-      );
-      setTemplates(filtered);
-    } else {
-      setTemplates([]);
-    }
-  }, [slug]);
+    const fetchData = async () => {
+      try {
+        const [sortRes, templatesRes] = await Promise.all([
+          axios.get(`${BASE_URL}/product/sort-options`),
+          axios.get(`${BASE_URL}/product/templates/by-category`, {
+            params: {
+              search: searchQuery || undefined,
+              category: slug,
+              sort_by: sortBy,
+              limit,
+              offset,
+            },
+          }),
+        ]);
   
+        setSortOptions(sortRes.data);
+        setAllTemplates(templatesRes.data.products);
+        setTemplates(templatesRes.data.products);  // Initially display all fetched
+        setTotalTemplates(templatesRes.data.total);
+      } catch (err) {
+        console.error("Error loading data", err);
+      }
+    };
+  
+    // only run when slug and categoryMap[slug] are available
+    if (slug && categoryMap[slug]) {
+      fetchData();
+    }
+  }, [slug, categoryMap, offset, limit, searchQuery, sortBy]);
+  
+  const applyFilters = () => {
+    const filteredTemplates = allTemplates.filter((template: TemplateProps) => {
+      const matchesCategory = category === "all" || template.category === category;
+      const matchesSearch = template.title.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+    setTemplates(filteredTemplates);
+  };
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!searchQuery.trim()) {
-      // Reset to category-filtered templates
-      const filtered = allTemplates.filter(
-        template => template.category === categoryMap[slug || ""]
-      );
-      setTemplates(filtered);
-      return;
-    }
-    
-    // Filter by search within the category
-    const filtered = templates.filter(template => 
-      template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    
-    setTemplates(filtered);
+    applyFilters();
   };
-  
-  const applySorting = (value: string) => {
-    setSortBy(value);
-    
-    const sorted = [...templates];
-    switch (value) {
-      case "price-asc":
-        sorted.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        sorted.sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        sorted.sort((a, b) => b.rating - a.rating);
-        break;
-      case "popularity":
-        sorted.sort((a, b) => b.sales - a.sales);
-        break;
-      default:
-        // Keep the default sorting (newest)
-        break;
+
+  const handleNext = () => {
+    if (offset + limit < totalTemplates) {
+      setOffset(offset + limit);
     }
-    
-    setTemplates(sorted);
   };
-  
+
+  const handlePrev = () => {
+    if (offset > 0) {
+      setOffset(offset - limit);
+    }
+  };
+
   return (
     <div className="container py-8">
       <h1 className="text-3xl font-bold">{categoryName || "Category"}</h1>
@@ -208,7 +214,7 @@ const CategoryPage = () => {
           <span className="text-sm font-medium">Sort by:</span>
           <Select 
             value={sortBy} 
-            onValueChange={applySorting}
+            onValueChange={(value) => setSortBy(value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Sort by" />
@@ -225,10 +231,33 @@ const CategoryPage = () => {
       </div>
       
       {templates.length > 0 ? (
+         <>
         <TemplateGrid 
           templates={templates}
           description={`Showing ${templates.length} templates in ${categoryName}`}
         />
+        <div className="flex justify-between items-center mt-6">
+        <Button 
+          variant="outline" 
+          onClick={handlePrev}
+          disabled={offset === 0}
+        >
+          Previous
+        </Button>
+  
+        <span className="text-sm text-muted-foreground">
+        Page {Math.floor(offset / limit) + 1} of {Math.ceil(totalTemplates / limit)}
+        </span>
+  
+        <Button 
+          variant="outline" 
+          onClick={handleNext}
+          disabled={offset + limit >= totalTemplates}
+        >
+          Next
+        </Button>
+      </div>
+      </>
       ) : (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <h2 className="text-xl font-semibold">No templates found</h2>

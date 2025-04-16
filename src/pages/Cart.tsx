@@ -19,10 +19,10 @@ const Cart = () => {
 
   const handleApplyCoupon = () => {
     if (couponCode.toLowerCase() === "discount20") {
-      const discountAmount = subtotal * 0.2;
+      const discountAmount = subtotal * 0.1;
       setDiscount(discountAmount);
       toast.success("Coupon applied", {
-        description: "20% discount has been applied to your order."
+        description: "10% discount has been applied to your order."
       });
     } else {
       toast.error("Invalid coupon code", {

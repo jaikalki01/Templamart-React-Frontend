@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -11,7 +11,15 @@ import { Heart, Share2, ShoppingCart, Star, ExternalLink, Check, Calendar, Downl
 import { useShoppingContext } from "@/context/ShoppingContext";
 import { toast } from "sonner";
 import { TemplateProps } from "@/components/templates/TemplateCard";
-
+import axios from "axios";
+import { BASE_URL } from "@/config";
+import { useAuth } from "@/context/auth-context";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Edit, Trash2, Plus, FileText } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 // Modified template data to include the 'image' property required by TemplateProps
 const templateData = {
   id: "1",
@@ -103,19 +111,101 @@ const reviews = [
 const TemplateDetails = () => {
   const { id } = useParams<{ id: string }>();
   const [activeImage, setActiveImage] = useState(0);
-  const { addToCart, toggleWishlist, isInWishlist } = useShoppingContext();
+  const [templateData, setTemplateData] = useState<any>(null);
   const [previewLoading, setPreviewLoading] = useState(true);
+  const { addToCart, toggleWishlist, isInWishlist } = useShoppingContext();
+  const [reviews, setReviews] = useState<any>(null);
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [newReview, setnewReview] = useState({
+    rating: 0,
+    comment: "",
+    
+  });
+   const { user } = useAuth();
+   
+   const handleNewReviewNameChange = (value: string) => {
+    setnewReview({
+      ...newReview,
+      rating: Number(value),
+      //comment: String(value)
+      
+    });
+  };
+  const handleAddReview = async () => {
+    if (!newReview.rating) {
+      toast.error("Rating is required");
+      return;
+    }
   
+    const categoryToSend = {
+      rating: newReview.rating,
+      comment_text: newReview.comment,
+      product_token: id,
+      //user_id: user.token,
+      
+    };
+  
+    try {
+      const response = await fetch(`${BASE_URL}/product/product/${id}/reviews`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(categoryToSend),
+      });
+      
+      const savedData = await response.json();
+
+      if (savedData.status === "success") {
+        const newReviewData = savedData.data;
+        setReviews((prev: any) => [...(prev || []), newReviewData]);
+      
+        toast.success("Review added", {
+          description: savedData.message || "Rating has been added to records",
+        });
+      
+        setnewReview({ rating: 0, comment: "" });
+        setIsReviewDialogOpen(false);
+      } else {
+        toast.error("Add Rating failed!", {
+          description: savedData.message || "Unexpected error",
+        });
+      }
+      
+    } catch (error) {
+      console.error("Error saving review:", error);
+      toast.error("Failed to save review", {
+        description: "Please try again later",
+      });
+    }      
+  };
+
+  useEffect(() => {
+    if (id) {
+      axios.get(`${BASE_URL}/product/details/${id}`)
+        .then(res => setTemplateData(res.data))
+        .catch(() => toast.error("Failed to load template details"));
+      axios.get(`${BASE_URL}/product/reviews/${id}`)
+        .then(resp => setReviews(resp.data))
+        .catch(() => toast.error("Failed to load reviews"));
+       
+    }
+  }, [id]);
+
+  if (!templateData) return <div className="text-center py-20">Loading...</div>;
+
   const handleLike = () => {
-    toggleWishlist(templateCartData);
+    toggleWishlist(templateData);
   };
-  
+
   const handleAddToCart = () => {
-    addToCart(templateCartData);
+    addToCart(templateData);
   };
-  
+
   const handleBuyNow = () => {
-    addToCart(templateCartData);
+    addToCart(templateData);
     window.location.href = "/cart";
   };
 
@@ -125,34 +215,50 @@ const TemplateDetails = () => {
       description: "Share this template with others!",
     });
   };
-  const handlePreviewLoad = () => {
-    setPreviewLoading(false);
-  };
+
+  const handlePreviewLoad = () => setPreviewLoading(false);
+
 
   return (
     <div className="container py-8">
+
       <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
         <div className="space-y-4">
           <div className="overflow-hidden rounded-lg">
-          <iframe 
-                  src="https://example.com"
-                  title={`${templateData.title} preview`}
-                  //className={`iframe-preview ${previewLoading ? 'hidden' : 'block'}`}
-                  //className="h-auto w-full rounded-lg object-cover"
-                  className="h-[600px] w-full flex items-center justify-center bg-gray-100"
-                  onLoad={handlePreviewLoad}
+            <img
+              src={templateData.images[activeImage]}
+              alt={templateData.title}
+              className="h-auto w-full rounded-lg object-cover"
+            />
+          </div>
+          <div className="flex gap-2 overflow-auto pb-2">
+            {templateData.images.map((image, index) => (
+              <button
+                key={index}
+                className={`relative min-w-[80px] overflow-hidden rounded-md ${
+                  activeImage === index ? "ring-2 ring-primary" : ""
+                }`}
+                onClick={() => setActiveImage(index)}
+              >
+                <img
+                  src={image}
+                  alt={`${templateData.title} preview ${index + 1}`}
+                  className="aspect-[4/3] h-20 w-full object-cover"
                 />
-                <div className="mt-4 flex justify-between">
-                  <Button variant="outline" size="sm" className="flex items-center" asChild>
-                    <a href="example.com" target="_blank" rel="noopener noreferrer">
-                      <ExternalLink size={16} className="mr-1" />
-                      Open in New Window
-                    </a>
-                  </Button>
-                </div>
+              </button>
+            ))}
             
           </div>
-         
+          <div className="flex gap-3">
+  <a href={templateData.preview_url} target="_blank" rel="noopener noreferrer" className="flex-1">
+    <Button className="w-full">Preview</Button>
+  </a>
+  
+  <a href={templateData.download_url} download className="flex-1">
+    <Button className="w-full">Download</Button>
+  </a>
+</div>
+
         </div>
 
         <div className="space-y-6">
@@ -241,6 +347,7 @@ const TemplateDetails = () => {
               <ShoppingCart className="mr-2 h-4 w-4" />
               Add to Cart
             </Button>
+           
           </div>
 
           <Separator />
@@ -260,7 +367,7 @@ const TemplateDetails = () => {
             <div>
               <p className="text-sm font-medium">File Format</p>
               <p className="text-sm text-muted-foreground">
-                {templateData.fileFormat}
+                HTML, CSS, JavaScript, Bootstrap
               </p>
             </div>
             <div>
@@ -278,7 +385,7 @@ const TemplateDetails = () => {
             <div>
               <p className="text-sm font-medium">File Size</p>
               <p className="text-sm text-muted-foreground">
-                {templateData.fileSize}
+                5-10 MB (depending on the file format)
               </p>
             </div>
           </div>
@@ -303,7 +410,7 @@ const TemplateDetails = () => {
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-12">
         <Tabs defaultValue="description">
           <TabsList className="w-full justify-start">
             <TabsTrigger value="description">Description</TabsTrigger>
@@ -314,6 +421,7 @@ const TemplateDetails = () => {
           </TabsList>
           <TabsContent value="description" className="mt-6">
             <div className="prose max-w-none">
+        
               <div dangerouslySetInnerHTML={{ __html: templateData.longDescription }} />
             </div>
           </TabsContent>
@@ -321,7 +429,66 @@ const TemplateDetails = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold">Customer Reviews</h3>
-                <Button>Write a Review</Button>
+                
+                <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
+          <DialogTrigger asChild>
+          <Button
+      onClick={() => {
+        if (!user) {
+          toast.error("Please login to write a review");
+          window.location.href = "/login"; // or use router.push("/login") if using Next.js
+        } else {
+          setIsReviewDialogOpen(true);
+        }
+      }}
+    >
+      <Plus className="mr-2 h-4 w-4" />
+      Write a Review
+    </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Review</DialogTitle>
+              <DialogDescription>
+                Create a new Review for the marketplace.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="rating">Select Rating</Label>
+                <Input
+                  id="rating"
+                  placeholder="e.g., Mobile App Templates"
+                  type="number"
+                  min="1"
+                  max="5"
+                  value={newReview.rating}
+                  onChange={(e) => handleNewReviewNameChange(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="comment">Comment</Label>
+                <Textarea
+                  id="comment"
+                  placeholder="Please Type Your Comments"
+                  value={newReview.comment}
+                  onChange={(e) => setnewReview({ ...newReview, comment: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Your Comments Live Here
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsReviewDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddReview}>
+                Add Review
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
               </div>
               <div className="grid gap-6">
                 {reviews.map((review) => (
@@ -392,6 +559,7 @@ const TemplateDetails = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        
       </div>
     </div>
   );

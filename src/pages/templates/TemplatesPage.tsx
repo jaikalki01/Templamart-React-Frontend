@@ -122,89 +122,87 @@ const sortOptions = [
 ];
 
 const TemplatesPage = () => {
-  const [allTemplates, setallTemplates] = useState<TemplateProps[]>([]);
-  //const [filteredTemplates, setFilteredTemplates] = useState(allTemplates);
-  const [filteredTemplates, setFilteredTemplates] = useState<TemplateProps[]>([]);
-
+  const [allTemplates, setAllTemplates] = useState([]);
+  const [filteredTemplates, setFilteredTemplates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  //const [category, setCategory] = useState("all");
-  //const [sortBy, setSortBy] = useState("newest");
-  const [category, setCategory] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [category, setCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
   const [priceRange, setPriceRange] = useState([0, 100]);
-  
+  const [showFreeOnly, setShowFreeOnly] = useState(false);
+  const [ratingAbove4, setRatingAbove4] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [sortOptions, setSortOptions] = useState([]);
+  const [limit, setLimit] = useState(48);
+  const [offset, setOffset] = useState(0);
+  const [totalTemplates, setTotalTemplates] = useState(0);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const categoriesRes = await axios.get(`${BASE_URL}/all-categories`);
-        const categories = categoriesRes.data;
-        setCategory(categories.length > 0 ? categories[0].value : "all"); // Set first category as default
+        const [categoriesRes, sortRes, templatesRes] = await Promise.all([
+          axios.get(`${BASE_URL}/product/categories`),
+          axios.get(`${BASE_URL}/product/sort-options`),
+          //axios.get(`${BASE_URL}/product/all-templates,`),
+          axios.get(`${BASE_URL}/product/all-templates`, {
+            params: {
+              search: searchQuery || undefined,
+              category: category !== "all" ? category : undefined,
+              sort_by: sortBy,
+              min_price: priceRange[0],
+              max_price: priceRange[1],
+              free_only: showFreeOnly,
+              rating_above: ratingAbove4 ? 4 : undefined,
+              limit,
+              offset
+            }
+          })
+          
+        ]);
 
-        // Fetch sort options and set default
-        const sortRes = await axios.get(`${BASE_URL}/sort-options`);
-        const sortOptions = sortRes.data;
-        setSortBy(sortOptions.length > 0 ? sortOptions[0].value : "newest"); // Set first sort option as default
-
-        // Fetch templates
-       //const templatesRes = await axios.get(`${BASE_URL}/all-templates`);
-       //setallTemplates(templatesRes.data.map(t => ({ ...t, id: `new-${t.id}` })));
-       const templatesRes = await axios.get(`${BASE_URL}/all-templates`);
-       const templates = templatesRes.data.map(t => ({ ...t, id: `new-${t.id}` }));
-       setallTemplates(templates);
-       setFilteredTemplates(templates);
-        // Fetch categories and set default
-              } catch (error) {
-        console.error("Error fetching data:", error);
+        setCategories(categoriesRes.data);
+        setSortOptions(sortRes.data);
+        const templates = templatesRes.data;
+        setAllTemplates(templates.products);
+        setFilteredTemplates(templates.products);
+        setTotalTemplates(templates.total);
+        
+      } catch (err) {
+        console.error("Error loading data", err);
       }
     };
-
     fetchData();
-  }, []);
-  
-  
-  // Filter options
-  const [showFreeOnly, setShowFreeOnly] = useState(false);
-  const [ratingAbove4, setRatingAbove4] = useState(false);
-  
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    applyFilters();
-  };
-  
-  const applyFilters = () => {
-    let filtered = allTemplates;
-    
-    // Apply search filter
+  }, [offset, limit, searchQuery, category, sortBy, priceRange, showFreeOnly, ratingAbove4]);
+
+  const applyFilters  = () => {
+    let filtered = [...allTemplates];
+
     if (searchQuery) {
-      filtered = filtered.filter(template => 
-        template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        template.description.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (template) =>
+          template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          template.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    
-    // Apply category filter
+
     if (category !== "all") {
-      filtered = filtered.filter(template => 
-        template.category.toLowerCase().replace(/\s+/g, '-') === category
+      filtered = filtered.filter(
+        (template) =>
+          template.category.toLowerCase().replace(/\s+/g, "-") === category
       );
     }
-    
-    // Apply price range filter
-    filtered = filtered.filter(template => 
-      template.price >= priceRange[0] && template.price <= priceRange[1]
+
+    filtered = filtered.filter(
+      (template) =>
+        template.price >= priceRange[0] && template.price <= priceRange[1]
     );
-    
-    // Apply free only filter
+
     if (showFreeOnly) {
-      filtered = filtered.filter(template => template.price === 0);
+      filtered = filtered.filter((template) => template.price === 0);
     }
-    
-    // Apply rating filter
+
     if (ratingAbove4) {
-      filtered = filtered.filter(template => template.rating >= 4);
+      filtered = filtered.filter((template) => template.rating >= 4);
     }
-    
-    // Apply sorting
+
     switch (sortBy) {
       case "price-asc":
         filtered.sort((a, b) => a.price - b.price);
@@ -218,14 +216,33 @@ const TemplatesPage = () => {
       case "popularity":
         filtered.sort((a, b) => b.sales - a.sales);
         break;
-      default:
-        // Keep the default sorting (newest)
-        break;
     }
-    
+
     setFilteredTemplates(filtered);
   };
-  
+
+  useEffect(() => {
+    applyFilters();
+  }, [searchQuery, category, sortBy, priceRange, showFreeOnly, ratingAbove4]);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    applyFilters();
+  };
+
+  const handleNext = () => {
+    if (offset + limit < totalTemplates) {
+      setOffset(offset + limit);
+    }
+  };
+
+  const handlePrev = () => {
+    if (offset > 0) {
+      setOffset(offset - limit);
+    }
+  };
+  //const pageTemplates = filteredTemplates.slice(offset, offset + limit);
+
+ // const pageTemplates = filteredTemplates.slice(offset, offset + limit);
   return (
     <div className="container py-8">
       <h1 className="text-3xl font-bold">Browse Templates</h1>
@@ -243,10 +260,7 @@ const TemplatesPage = () => {
                 <Label htmlFor="category">Category</Label>
                 <Select 
                   value={category} 
-                  onValueChange={(value) => {
-                    setCategory(value);
-                    setTimeout(applyFilters, 0);
-                  }}
+                  onValueChange={(value) => setCategory(value)}
                 >
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select category" />
@@ -269,10 +283,7 @@ const TemplatesPage = () => {
                   min={0}
                   max={100}
                   step={1}
-                  onValueChange={(value) => {
-                    setPriceRange(value as [number, number]);
-                    setTimeout(applyFilters, 0);
-                  }}
+                  onValueChange={(val) => setPriceRange(val)}
                   className="mt-2"
                 />
               </div>
@@ -283,10 +294,7 @@ const TemplatesPage = () => {
                   <Checkbox 
                     id="free-only" 
                     checked={showFreeOnly}
-                    onCheckedChange={(checked) => {
-                      setShowFreeOnly(checked as boolean);
-                      setTimeout(applyFilters, 0);
-                    }}
+                    onCheckedChange={(checked) => setShowFreeOnly(!!checked)}
                   />
                   <Label htmlFor="free-only">Free Only</Label>
                 </div>
@@ -295,10 +303,7 @@ const TemplatesPage = () => {
                   <Checkbox 
                     id="rating-above-4" 
                     checked={ratingAbove4}
-                    onCheckedChange={(checked) => {
-                      setRatingAbove4(checked as boolean);
-                      setTimeout(applyFilters, 0);
-                    }}
+                    onCheckedChange={(checked) => setRatingAbove4(!!checked)}
                   />
                   <Label htmlFor="rating-above-4">Rating 4+ Stars</Label>
                 </div>
@@ -315,7 +320,6 @@ const TemplatesPage = () => {
                   setPriceRange([0, 100]);
                   setShowFreeOnly(false);
                   setRatingAbove4(false);
-                  setFilteredTemplates(allTemplates);
                 }}
               >
                 Reset Filters
@@ -344,10 +348,7 @@ const TemplatesPage = () => {
               <span className="text-sm font-medium">Sort by:</span>
               <Select 
                 value={sortBy} 
-                onValueChange={(value) => {
-                  setSortBy(value);
-                  setTimeout(applyFilters, 0);
-                }}
+                onValueChange={(value) => setSortBy(value)}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Sort by" />
@@ -364,10 +365,39 @@ const TemplatesPage = () => {
           </div>
           
           {filteredTemplates.length > 0 ? (
+              <>
             <TemplateGrid 
               templates={filteredTemplates} 
               description={`Showing ${filteredTemplates.length} templates`}
+              //templates={pageTemplates}
+              //description={`Showing ${pageTemplates.length} of ${filteredTemplates.length} templates`}
+              //templates={pageTemplates}
+              //description={`Showing ${offset + 1} - ${Math.min(offset + limit, filteredTemplates.length)} of ${filteredTemplates.length} templates`}
+            
             />
+
+            <div className="flex justify-between items-center mt-6">
+      <Button 
+        variant="outline" 
+        onClick={handlePrev}
+        disabled={offset === 0}
+      >
+        Previous
+      </Button>
+
+      <span className="text-sm text-muted-foreground">
+      Page {Math.floor(offset / limit) + 1} of {Math.ceil(totalTemplates / limit)}
+      </span>
+
+      <Button 
+        variant="outline" 
+        onClick={handleNext}
+        disabled={offset + limit >= totalTemplates}
+      >
+        Next
+      </Button>
+    </div>
+    </>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="rounded-full bg-muted p-6">
@@ -386,6 +416,7 @@ const TemplatesPage = () => {
                   />
                 </svg>
               </div>
+              
               <h2 className="mt-4 text-xl font-semibold">No templates found</h2>
               <p className="mt-2 text-muted-foreground">
                 Try adjusting your search or filter criteria
