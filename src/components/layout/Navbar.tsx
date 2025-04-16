@@ -65,12 +65,12 @@ useEffect(() => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
       <div className="container flex h-16 items-center justify-between">
-        <div className="relative flex items-center gap-6 md:gap-10">
-        <Link to="/" className="flex items-center ">
-  <img src={logo} alt="T logo" className="w-[30px] -mr-2" />
-  <span className="text-xl font-bold text-primary">emplaMarT</span>
-</Link>
-
+        <div className="flex items-center gap-6 md:gap-10">
+           <Link to="/" className="flex items-center space-x-2"> 
+          <img src={logo} alt="this is logo of company" width={50} />
+       
+            {/* <span className="text-xl font-bold text-primary">TemplaMarT</span> */}
+          </Link>
 
           {/* Desktop Navigation */}
           <NavigationMenu className="hidden md:flex">
