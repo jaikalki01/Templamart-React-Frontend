@@ -29,7 +29,7 @@ import Terms from "@/pages/Terms-condition";
 import RefundPolicy from "@/pages/RefundPolicy";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import LicenseAgreement from "@/pages/License";
-
+import Contact from "./pages/Contact";
 // Seller Pages
 import SellerDashboard from "@/pages/seller/SellerDashboard";
 import SellerTemplates from "@/pages/seller/SellerTemplates";
@@ -79,6 +79,7 @@ const App = () => (
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/license" element={<LicenseAgreement />} />
                 <Route path="account" element={<UserAccount />} />
+                <Route path="contact" element={<Contact />} />
               </Route>
 
               {/* Seller Dashboard Routes */}
