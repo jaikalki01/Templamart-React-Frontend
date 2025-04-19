@@ -19,10 +19,10 @@ const Cart = () => {
 
   const handleApplyCoupon = () => {
     if (couponCode.toLowerCase() === "discount20") {
-      const discountAmount = subtotal * 0.2;
+      const discountAmount = subtotal * 0.1;
       setDiscount(discountAmount);
       toast.success("Coupon applied", {
-        description: "20% discount has been applied to your order."
+        description: "10% discount has been applied to your order."
       });
     } else {
       toast.error("Invalid coupon code", {
@@ -107,7 +107,7 @@ const Cart = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                        <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -139,18 +139,18 @@ const Cart = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Discount</span>
-                      <span>-${discount.toFixed(2)}</span>
+                      <span>-₹{discount.toFixed(2)}</span>
                     </div>
                   )}
                   <Separator />
                   <div className="flex justify-between font-bold">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₹{total.toFixed(2)}</span>
                   </div>
 
                   <div className="space-y-2">

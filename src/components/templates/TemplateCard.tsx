@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Heart, ShoppingCart } from "lucide-react";
 import { useShoppingContext } from "@/context/ShoppingContext";
+import { BASE_URL, DOMAIN } from "@/config";
 
 export interface TemplateProps {
   id: string;
@@ -74,6 +75,11 @@ const TemplateCard = ({ template }: TemplateCardProps) => {
         <CardContent className="p-4">
           <Badge variant="secondary" className="mb-2">
             {template.category}
+            
+          </Badge>
+          <Badge variant="secondary" className="mb-2">
+           
+            <span>⭐ {template.rating}</span>
           </Badge>
           <h3 className="line-clamp-1 text-lg font-medium">{template.title}</h3>
           <p className="line-clamp-2 text-sm text-muted-foreground">
@@ -91,8 +97,9 @@ const TemplateCard = ({ template }: TemplateCardProps) => {
         <CardFooter className="border-t p-4">
           <div className="flex w-full items-center justify-between">
             <span className="text-lg font-semibold">
-              ${template.price.toFixed(2)}
+            ₹{template.price.toFixed(2)}
             </span>
+            
             <Button size="sm">View Details</Button>
           </div>
         </CardFooter>

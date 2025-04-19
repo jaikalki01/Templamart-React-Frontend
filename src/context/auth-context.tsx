@@ -15,6 +15,8 @@ type User = {
 };
 
 type AuthContextType = {
+  isAuthenticated: boolean;
+  currentUser: User | null;
   user: User | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
@@ -22,6 +24,8 @@ type AuthContextType = {
 
 // Create context
 const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  currentUser: null,
   user: null,
   login: async () => {},
   logout: () => {},
@@ -92,8 +96,11 @@ setUser(userData);
     navigate("/login");
   };
 
+  
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated: !!user,
+      currentUser: user,  user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

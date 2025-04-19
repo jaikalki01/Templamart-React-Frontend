@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,9 +41,13 @@ const templateFormSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
   description: z.string().min(20, "Description must be at least 20 characters"),
   category: z.string().min(1, "Please select a category"),
+  features_description: z.string().min(20, "Description must be at least 20 characters"),
+  //long_description: z.string().min(20, "Description must be at least 20 characters"),
   price: z.coerce.number().min(0, "Price must be a positive number"),
   tags: z.string(),
   thumbnail: z.string().optional(),
+  thumbnail1: z.string().optional(),
+  thumbnail2: z.string().optional(),
   files: z.string().optional(),
   licenseType: z.string().min(1, "Please select a license type"),
 });
@@ -54,23 +58,48 @@ const defaultValues: Partial<TemplateFormValues> = {
   title: "",
   description: "",
   category: "",
+  features_description: "",
+  //long_description: "",
   price: 0,
   tags: "",
   licenseType: "standard",
 };
 
 const UploadTemplate = () => {
+  type Category = {
+    name: string;
+    value: string;
+  };
   const navigate = useNavigate();
   const { user } = useAuth(); // ✅ Get token and role
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [thumbnailPreview1, setThumbnailPreview1] = useState<string | null>(null);
+  const [thumbnailPreview2, setThumbnailPreview2] = useState<string | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailFile1, setThumbnailFile1] = useState<File | null>(null);
+  const [thumbnailFile2, setThumbnailFile2] = useState<File | null>(null);
   const [templateZipFile, setTemplateZipFile] = useState<File | null>(null);
+  const [categoryMap, setCategoryMap] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(false);
 
+  
+  
   const form = useForm<TemplateFormValues>({
     resolver: zodResolver(templateFormSchema),
     defaultValues,
   });
-
+  useEffect(() => {
+    fetch(`${BASE_URL}/product/categories`)
+      .then((res) => res.json())
+      .then((data: Category[]) => {
+        setCategoryMap(data);
+        if (data.length > 0) {
+          form.setValue("category", data[0].value); // ✅ set 'value', not 'slug'
+        }
+      })
+      .catch((err) => console.error("Error fetching categories:", err));
+  }, []);
+  
   const onSubmit = async (values: TemplateFormValues) => {
     if (!user?.token) {
       toast.error("You must be logged in to upload a product.");
@@ -81,13 +110,21 @@ const UploadTemplate = () => {
     formData.append("product_name", values.title);
     formData.append("title", values.title);
     formData.append("description", values.description);
+    //formData.append("long_description", values.long_description);
+    formData.append("features_description", values.features_description);
     formData.append("tags", values.tags);
     formData.append("licenseType", values.licenseType);
     formData.append("category_name", values.category);
     formData.append("product_price", values.price.toString());
-
+    
     if (thumbnailFile) {
       formData.append("product_image", thumbnailFile);
+    }
+    if (thumbnailFile1) {
+      formData.append("product_image1", thumbnailFile1);
+    }
+    if (thumbnailFile2) {
+      formData.append("product_image2", thumbnailFile2);
     }
 
     if (templateZipFile) {
@@ -95,7 +132,8 @@ const UploadTemplate = () => {
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/product/create-product`, {
+      setLoading(true); // start loader
+      const response = await fetch(`${BASE_URL}/seller/create-product`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${user.token}`,
@@ -108,7 +146,7 @@ const UploadTemplate = () => {
       if (!response.ok) {
         throw new Error(result.detail || "Upload failed");
       }
-
+      setLoading(false); // stop loader
       toast.success("Product uploaded successfully!");
       navigate("/seller/templates");
     } catch (error: any) {
@@ -120,17 +158,62 @@ const UploadTemplate = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     setThumbnailFile(file);
+    //setThumbnailPreview(null); // Reset preview before loading new image
+
+  
 
     const reader = new FileReader();
     reader.onload = () => setThumbnailPreview(reader.result as string);
     reader.readAsDataURL(file);
   };
+  const handleThumbnailChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file1 = e.target.files?.[0];
+    if (!file1) return;
+    
+    setThumbnailFile1(file1);
+    //setThumbnailPreview(null); // Reset preview before loading new image
+    
 
-  const handleZipChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setTemplateZipFile(file);
-  };  
+  
+
+    const reader = new FileReader();
+    reader.onload = () => setThumbnailPreview1(reader.result as string);
+    reader.readAsDataURL(file1);
+  };
+  const handleThumbnailChange2 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file2 = e.target.files?.[0];
+    if (!file2) return;
+    
+    setThumbnailFile2(file2);
+    //setThumbnailPreview(null); // Reset preview before loading new image
+    
+
+  
+
+    const reader = new FileReader();
+    reader.onload = () => setThumbnailPreview2(reader.result as string);
+    reader.readAsDataURL(file2);
+  };
+  //const [zipFile, setZipFile] = useState<File | null>(null);
+  //const [zipFileName, setZipFileName] = useState<string | null>(null);
+  
+
+
+    const handleZipChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setTemplateZipFile(file);
+      }
+};
+useEffect(() => {
+  const sub = form.watch((values) => {
+    if (values.category !== undefined) {
+      console.log("Watched category value:", values.category);
+    }
+  });
+
+  return () => sub.unsubscribe(); // Clean up on unmount
+}, [form]);
 
   return (
     <div className="space-y-6">
@@ -193,34 +276,26 @@ const UploadTemplate = () => {
                   />
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Category</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a category" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="website-templates">Website Templates</SelectItem>
-                              <SelectItem value="ui-kits">UI Kits</SelectItem>
-                              <SelectItem value="graphics">Graphics</SelectItem>
-                              <SelectItem value="presentations">Presentations</SelectItem>
-                              <SelectItem value="email-templates">Email Templates</SelectItem>
-                              <SelectItem value="documents">Documents</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+  control={form.control}
+  name="category"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Category</FormLabel>
+      <FormControl>
+        <select {...field} className="border p-2 w-full rounded">
+          <option value="">Select a category</option>
+          {categoryMap.map((cat) => (
+            <option key={cat.value} value={cat.value}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
                     
                     <FormField
                       control={form.control}
@@ -294,6 +369,35 @@ const UploadTemplate = () => {
                       </FormItem>
                     )}
                   />
+                   
+                  <FormField
+                    control={form.control}
+                    name="features_description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Long features Description 250 characters</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder=
+{`ex.
+Lifetime updates,
+6 months technical support,
+Fully responsive design,
+Commercial license,
+Source files included`}
+                               
+                                      rows={5}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Include key features as list, use cases, and what makes your template unique
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                 </CardContent>
               </Card>
               
@@ -321,6 +425,11 @@ const UploadTemplate = () => {
                       className="hidden"
                       accept=".zip,.rar,.7zip"
                     />
+                     {templateZipFile && (
+      <p className="mt-4 text-sm text-green-600 font-medium">
+        ✅ {templateZipFile.name} uploaded
+      </p>
+    )}
                   </div>
                 </CardContent>
               </Card>
@@ -330,7 +439,7 @@ const UploadTemplate = () => {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Thumbnail Image</CardTitle>
+                  <CardTitle>Thumbnail Image 1</CardTitle>
                   <CardDescription>
                     Upload a thumbnail for your template
                   </CardDescription>
@@ -373,6 +482,96 @@ const UploadTemplate = () => {
                   </div>
                 </CardContent>
               </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Thumbnail Image 2</CardTitle>
+                  <CardDescription>
+                    Upload a thumbnail for your template
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div
+                      className={`aspect-video border rounded-md overflow-hidden flex items-center justify-center bg-muted ${
+                        !thumbnailPreview1 ? "border-dashed" : ""
+                      }`}
+                    >
+                      {thumbnailPreview1 ? (
+                        <img
+                          src={thumbnailPreview1}
+                          alt="Thumbnail preview"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="text-center p-4">
+                          <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">
+                            No thumbnail uploaded
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <Label htmlFor="thumbnail1">Upload Thumbnail</Label>
+                      <Input
+                        id="thumbnail1"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleThumbnailChange1}
+                        className="mt-1"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Recommended size: 1280×720px, JPG or PNG
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Thumbnail Image 3</CardTitle>
+                  <CardDescription>
+                    Upload a thumbnail for your template
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div
+                      className={`aspect-video border rounded-md overflow-hidden flex items-center justify-center bg-muted ${
+                        !thumbnailPreview2 ? "border-dashed" : ""
+                      }`}
+                    >
+                      {thumbnailPreview2 ? (
+                        <img
+                          src={thumbnailPreview2}
+                          alt="Thumbnail preview"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="text-center p-4">
+                          <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">
+                            No thumbnail uploaded
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <Label htmlFor="thumbnail2">Upload Thumbnail</Label>
+                      <Input
+                        id="thumbnail2"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleThumbnailChange2}
+                        className="mt-1"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Recommended size: 1280×720px, JPG or PNG
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
               
               <Card>
                 <CardHeader>
@@ -389,25 +588,7 @@ const UploadTemplate = () => {
                 </CardContent>
               </Card>
               
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pricing Tips</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 text-sm">
-                    <p>Pricing suggestions based on category:</p>
-                    <ul>
-                      <li>• UI Kits: $40-80</li>
-                      <li>• Website Templates: $50-100</li>
-                      <li>• Presentations: $20-50</li>
-                      <li>• Email Templates: $15-40</li>
-                    </ul>
-                    <p className="text-muted-foreground mt-2">
-                      Competitive pricing can help increase sales volume.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+             
             </div>
           </div>
           
@@ -415,7 +596,10 @@ const UploadTemplate = () => {
             <Button type="button" variant="outline" onClick={() => navigate("/seller/templates")}>
               Cancel
             </Button>
-            <Button type="submit">Submit for Review</Button>
+           
+            <Button type="submit" disabled={loading}>
+    {loading ? "Submitting..." : "Submit for Review"}
+  </Button>
           </div>
         </form>
       </Form>

@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import TemplateGrid from "@/components/templates/TemplateGrid";
 import { TemplateProps } from "@/components/templates/TemplateCard";
 import axios from "axios";
-import { BASE_URL } from "@/config";
+import { BASE_URL, DOMAIN } from "@/config";
+import { Link, useNavigate } from "react-router-dom";
 // Mock data for the templates
 //const BASE_URL = process.env.REACT_APP_BASE_URL || "http://127.0.0.1:8000/product";
 
@@ -19,17 +19,23 @@ const Index = () => {
   const [newTemplates, setNewTemplates] = useState<TemplateProps[]>([]);
   const [featuredTemplates, setfeaturedTemplates] = useState<TemplateProps[]>([]);
   const [popularCategories, setCategories] = useState([]);
- 
+   const navigate = useNavigate();
   useEffect(() => {
     axios.get(`${BASE_URL}/product/templates`)
       .then(response => {
         // Update the templates with new IDs as in the mock function
-        setNewTemplates(response.data.map(t => ({ ...t, id: `new-${t.id}` })));
-        setfeaturedTemplates(response.data.map(t => ({ ...t, id: `new-${t.id}` })));
+        setNewTemplates(response.data.map(t => ({ ...t, id: `${t.id}` })));
+        //setfeaturedTemplates(response.data.map(t => ({ ...t, id: `new-${t.id}` })));
       })
-      axios.get(`${BASE_URL}/product/popular-categories`)
+      axios.get(`${BASE_URL}/product/categories-with-count`)
       .then(response => {
         setCategories(response.data);
+      })
+      axios.get(`${BASE_URL}/product/templates-random`)
+      .then(response => {
+        // Update the templates with new IDs as in the mock function
+        //setNewTemplates(response.data.map(t => ({ ...t, id: `new-${t.id}` })));
+        setfeaturedTemplates(response.data.map(t => ({ ...t, id: `${t.id}` })));
       })
       .catch(error => {
         console.error("Error fetching templates:", error);
@@ -41,8 +47,9 @@ const Index = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle search logic
-    console.log("Searching for:", searchQuery);
+    if (searchQuery.trim()) {
+      navigate(`/templates?search=${encodeURIComponent(searchQuery)}`);
+    }
   };
 
   return (
@@ -126,6 +133,11 @@ const Index = () => {
             title="New Arrivals"
             description="The latest templates added to our marketplace"
           />
+           <div className="mt-8 text-center">
+            <Button asChild size="lg">
+              <Link to="/templates">View All Templates</Link>
+            </Button>
+          </div>
         </div>
       </section>
 

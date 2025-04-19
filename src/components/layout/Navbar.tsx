@@ -1,5 +1,5 @@
+import { useState, useEffect } from "react";
 import logo from "../../img/templamart-logo.png";
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,9 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, LogIn, Menu, Search, ShoppingCart, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useShoppingContext } from "@/context/ShoppingContext";
+import axios from "axios";
+import { BASE_URL } from "@/config";
+import { useAuth } from "@/context/auth-context";
 
 const categories = [
   { name: "Website Templates", href: "/category/website-templates" },
@@ -38,10 +41,17 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const { cartCount, wishlistCount } = useShoppingContext();
+  const [categoryMap, setCategoryMap] = useState([]);
   
-  // Mock authentication state - to be replaced with real auth
-  const isAuthenticated = false;
-  const currentUser = null;
+  //const { isAuthenticated,  logout } = useAuth();
+  const { isAuthenticated, currentUser, logout } = useAuth();
+
+useEffect(() => {
+  fetch(`${BASE_URL}/product/categories/navbar`)
+    .then((res) => res.json())
+    .then((data) => setCategoryMap(data))
+    .catch((err) => console.error("Error fetching categories:", err));
+}, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +67,7 @@ const Navbar = () => {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6 md:gap-10">
            <Link to="/" className="flex items-center space-x-2"> 
-          <img src={logo} alt="this is logo of company" width={50} />
+          <img src={logo} alt="this is logo of company" width={150} height={50}/>
        
             {/* <span className="text-xl font-bold text-primary">TemplaMarT</span> */}
           </Link>
@@ -69,7 +79,7 @@ const Navbar = () => {
                 <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    {categories.map((category) => (
+                    {categoryMap.map((category) => (
                       <li key={category.name}>
                         <NavigationMenuLink asChild>
                           <Link
@@ -91,11 +101,7 @@ const Navbar = () => {
                   All Templates
                 </Link>
               </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Link to="/pricing" className="nav-link">
-                  Pricing
-                </Link>
-              </NavigationMenuItem>
+              
               <NavigationMenuItem>
                 <Link to="/become-seller" className="nav-link">
                   Sell Templates
@@ -157,11 +163,11 @@ const Navbar = () => {
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarImage
-                      src={currentUser?.avatar || ""}
-                      alt={currentUser?.name || "User"}
+                      src="/default-avatar.png"
+                      alt={currentUser?.username || "User"}
                     />
                     <AvatarFallback>
-                      {currentUser?.name?.charAt(0) || "U"}
+                      {currentUser?.username?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -170,18 +176,29 @@ const Navbar = () => {
                 <DropdownMenuItem onClick={() => navigate("/account")}>
                   My Account
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/purchases")}>
-                  My Purchases
-                </DropdownMenuItem>
+               
                 <DropdownMenuItem onClick={() => navigate("/wishlist")}>
                   Wishlist
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/seller/dashboard")}>
-                  Seller Dashboard
-                </DropdownMenuItem>
+                {currentUser?.role === 2 && (
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => navigate("/seller/dashboard")}>
+            Seller Dashboard
+          </DropdownMenuItem>
+        </>
+      )}
+                {currentUser?.role === 3 && (
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => navigate("/admin/dashboard")}>
+            Admin Dashboard
+          </DropdownMenuItem>
+        </>
+      )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => {}}>Logout</DropdownMenuItem>
+                <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
@@ -291,7 +308,7 @@ const Navbar = () => {
               <Button
                 variant="outline"
                 className="mt-2"
-                onClick={() => {}}
+                onClick={logout}
               >
                 Logout
               </Button>
