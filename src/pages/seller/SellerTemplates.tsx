@@ -65,7 +65,7 @@ const SellerTemplates = () => {
         headers: { Authorization: `Bearer ${user.token}` },
         params: { limit: itemsPerPage, offset },
       });
-      const mapped = res.data.map((t: Template) => ({ ...t, id: `new-${t.id}` }));
+      const mapped = res.data.map((t: Template) => ({ ...t, id: `${t.id}` }));
       setAllTemplates(mapped);
       setTemplates(mapped); // Initial unfiltered
       setTotalTemplates(res.data.length); // You can return count from backend for exact page handling
@@ -122,10 +122,42 @@ const SellerTemplates = () => {
     setTemplates(filtered);
   };
 
-  const handleDeleteTemplate = (id: string) => {
-    setTemplates((prev) => prev.filter((t) => t.id !== id));
-    toast.success("Template deleted successfully");
+  const handleDeleteTemplate = async (id: string) => {
+    if (!user?.token) {
+      toast.error("You must be logged in to delete a product.");
+      return;
+    }
+  
+    try {
+      // Send delete request to FastAPI
+      const response = await fetch(`${BASE_URL}/seller/delete-product/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+  
+      const result = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(result.detail || "Failed to delete product");
+      }
+  
+      // Remove from state if deletion is successful
+      setTemplates((prev) => prev.filter((t) => t.id !== id));
+  
+      toast.success("Template deleted successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Something went wrong");
+    }
   };
+  
+  
+
+ // const handleDeleteTemplate = (id: string) => {
+  //  setTemplates((prev) => prev.filter((t) => t.id !== id));
+//toast.success("Template deleted successfully");
+  //};
 
   const totalPages = Math.ceil(totalTemplates / itemsPerPage);
 

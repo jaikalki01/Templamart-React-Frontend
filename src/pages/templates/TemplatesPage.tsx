@@ -127,7 +127,7 @@ const TemplatesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
-  const [priceRange, setPriceRange] = useState([0, 100]);
+  const [priceRange, setPriceRange] = useState([0, 10000]);
   const [showFreeOnly, setShowFreeOnly] = useState(false);
   const [ratingAbove4, setRatingAbove4] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -148,7 +148,7 @@ const TemplatesPage = () => {
               category: category !== "all" ? category : undefined,
               sort_by: sortBy,
               min_price: priceRange[0],
-              max_price: priceRange[1],
+              max_price: priceRange[10000],
               free_only: showFreeOnly,
               rating_above: ratingAbove4 ? 4 : undefined,
               limit,
@@ -277,11 +277,11 @@ const TemplatesPage = () => {
               
               {/* Price Range Filter */}
               <div>
-                <Label>Price Range (${priceRange[0]} - ${priceRange[1]})</Label>
+                <Label>Price Range (₹{priceRange[0]} - ₹{priceRange[1]})</Label>
                 <Slider
                   value={priceRange}
                   min={0}
-                  max={100}
+                  max={10000}
                   step={1}
                   onValueChange={(val) => setPriceRange(val)}
                   className="mt-2"

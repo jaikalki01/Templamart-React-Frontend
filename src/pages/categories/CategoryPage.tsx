@@ -126,17 +126,21 @@ const CategoryPage = () => {
   const [templates, setTemplates] = useState<TemplateProps[]>([]);
   const [allTemplates, setAllTemplates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [category, setCategory] = useState("all");
+  const [categoryMap, setCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [limit, setLimit] = useState(48);
   const [offset, setOffset] = useState(0);
   const [totalTemplates, setTotalTemplates] = useState(0);
   const [sortOptions, setSortOptions] = useState([]);
-  const categoryName = slug ? categoryMap[slug] : "";
+  //const categoryName = slug ? categoryMap[slug] : "";
+  const [categories, setCategories] = useState<{ name: string; value: string }[]>([]);
+  const categoryName = categories.find((cat) => cat.value === slug)?.name || "";
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [sortRes, templatesRes] = await Promise.all([
+        const [ cats, sortRes, templatesRes] = await Promise.all([
+         axios.get(`${BASE_URL}/product/categories`),
           axios.get(`${BASE_URL}/product/sort-options`),
           axios.get(`${BASE_URL}/product/templates/by-category`, {
             params: {
@@ -148,7 +152,8 @@ const CategoryPage = () => {
             },
           }),
         ]);
-  
+        setCategories(cats.data);
+        setCategory(cats.data);
         setSortOptions(sortRes.data);
         setAllTemplates(templatesRes.data.products);
         setTemplates(templatesRes.data.products);  // Initially display all fetched
@@ -159,19 +164,22 @@ const CategoryPage = () => {
     };
   
     // only run when slug and categoryMap[slug] are available
-    if (slug && categoryMap[slug]) {
+    if (slug) {
       fetchData();
     }
   }, [slug, categoryMap, offset, limit, searchQuery, sortBy]);
   
+  
+
   const applyFilters = () => {
     const filteredTemplates = allTemplates.filter((template: TemplateProps) => {
-      const matchesCategory = category === "all" || template.category === category;
+      const matchesCategory = slug === "all" || template.category === slug;
       const matchesSearch = template.title.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
     setTemplates(filteredTemplates);
   };
+  
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     applyFilters();

@@ -67,7 +67,7 @@ useEffect(() => {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6 md:gap-10">
            <Link to="/" className="flex items-center space-x-2"> 
-          <img src={logo} alt="this is logo of company" width={50} />
+          <img src={logo} alt="this is logo of company" width={150} height={50}/>
        
             {/* <span className="text-xl font-bold text-primary">TemplaMarT</span> */}
           </Link>

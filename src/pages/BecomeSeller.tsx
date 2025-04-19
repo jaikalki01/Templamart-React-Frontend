@@ -43,7 +43,7 @@ const BecomeSeller = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("${BASE_URL}/seller/signUp", {
+      const response = await fetch(`${BASE_URL}/seller/signUp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

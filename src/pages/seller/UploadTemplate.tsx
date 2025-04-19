@@ -80,6 +80,7 @@ const UploadTemplate = () => {
   const [thumbnailFile2, setThumbnailFile2] = useState<File | null>(null);
   const [templateZipFile, setTemplateZipFile] = useState<File | null>(null);
   const [categoryMap, setCategoryMap] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(false);
 
   
   
@@ -131,6 +132,7 @@ const UploadTemplate = () => {
     }
 
     try {
+      setLoading(true); // start loader
       const response = await fetch(`${BASE_URL}/seller/create-product`, {
         method: "POST",
         headers: {
@@ -144,7 +146,7 @@ const UploadTemplate = () => {
       if (!response.ok) {
         throw new Error(result.detail || "Upload failed");
       }
-
+      setLoading(false); // stop loader
       toast.success("Product uploaded successfully!");
       navigate("/seller/templates");
     } catch (error: any) {
@@ -594,7 +596,10 @@ Source files included`}
             <Button type="button" variant="outline" onClick={() => navigate("/seller/templates")}>
               Cancel
             </Button>
-            <Button type="submit">Submit for Review</Button>
+           
+            <Button type="submit" disabled={loading}>
+    {loading ? "Submitting..." : "Submit for Review"}
+  </Button>
           </div>
         </form>
       </Form>

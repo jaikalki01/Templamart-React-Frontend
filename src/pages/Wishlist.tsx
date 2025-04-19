@@ -67,7 +67,7 @@ const Wishlist = () => {
                     </h3>
                     <p className="text-sm text-muted-foreground">{item.category}</p>
                   </div>
-                  <p className="font-bold">${item.price.toFixed(2)}</p>
+                  <p className="font-bold">₹{item.price.toFixed(2)}</p>
                 </div>
                 <p className="text-sm">{item.description}</p>
                 <div className="flex items-center text-sm text-muted-foreground">
