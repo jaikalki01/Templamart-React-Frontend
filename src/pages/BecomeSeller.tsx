@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { CheckCircle, DollarSign, FileCheck, FileText, Package, Users } from "lucide-react";
 import { BASE_URL } from "@/config";
+import { Helmet } from "react-helmet-async";
+
 
 const BecomeSeller = () => {
   const navigate = useNavigate();
@@ -74,6 +76,41 @@ const BecomeSeller = () => {
 
   return (
     <div className="container py-8">
+      <Helmet>
+        {/* FAQ Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "How do I become a seller on Templamart?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Simply click on 'Become a Seller', sign up, and start uploading your templates."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is there any fee for uploading templates?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No, uploading is free. We only take a commission when your template is sold."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I sell UI kits and graphics too?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes! Templamart supports Website Templates, UI Kits, Graphics, and Presentation Templates."
+                }
+              }
+            ]
+          })}
+        </script> 
+      </Helmet>
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold mb-2">Become a Seller</h1>
         <p className="text-muted-foreground mb-8">
@@ -129,7 +166,7 @@ const BecomeSeller = () => {
                   </CardContent>
                 </Card>
               </div>
-              
+
               <div className="rounded-lg border p-6 bg-accent/20">
                 <h3 className="text-lg font-medium mb-2">Why sell on TemplaMarT?</h3>
                 <ul className="space-y-2">
@@ -158,7 +195,7 @@ const BecomeSeller = () => {
               <CardContent className="pt-6 space-y-4">
                 <h3 className="text-lg font-medium">Seller Requirements</h3>
                 <p>To become a seller on TemplaMarT, you need to meet the following requirements:</p>
-                
+
                 <div className="space-y-4">
                   <div className="rounded-lg border p-4">
                     <h4 className="font-medium mb-2 flex items-center">
@@ -170,7 +207,7 @@ const BecomeSeller = () => {
                       All templates undergo a review process before being listed.
                     </p>
                   </div>
-                  
+
                   <div className="rounded-lg border p-4">
                     <h4 className="font-medium mb-2 flex items-center">
                       <Users className="h-5 w-5 mr-2 text-primary" />
@@ -181,7 +218,7 @@ const BecomeSeller = () => {
                       valid identification and payment information.
                     </p>
                   </div>
-                  
+
                   <div className="rounded-lg border p-4">
                     <h4 className="font-medium mb-2 flex items-center">
                       <DollarSign className="h-5 w-5 mr-2 text-primary" />
@@ -200,7 +237,7 @@ const BecomeSeller = () => {
             <Card>
               <CardContent className="pt-6 space-y-4">
                 <h3 className="text-lg font-medium">Frequently Asked Questions</h3>
-                
+
                 <div className="space-y-4">
                   <div className="border-b pb-4">
                     <h4 className="font-medium mb-2">How much can I earn?</h4>
@@ -209,7 +246,7 @@ const BecomeSeller = () => {
                       Our commission structure allows you to keep 70% of the sale price for exclusive items.
                     </p>
                   </div>
-                  
+
                   <div className="border-b pb-4">
                     <h4 className="font-medium mb-2">How often do I get paid?</h4>
                     <p className="text-sm text-muted-foreground">
@@ -217,7 +254,7 @@ const BecomeSeller = () => {
                       You can request a payout at any time from your seller dashboard.
                     </p>
                   </div>
-                  
+
                   <div className="border-b pb-4">
                     <h4 className="font-medium mb-2">Can I sell my templates elsewhere?</h4>
                     <p className="text-sm text-muted-foreground">
@@ -225,7 +262,7 @@ const BecomeSeller = () => {
                       offer a lower commission rate but allow you to sell on multiple platforms.
                     </p>
                   </div>
-                  
+
                   <div className="border-b pb-4">
                     <h4 className="font-medium mb-2">How long does the review process take?</h4>
                     <p className="text-sm text-muted-foreground">
@@ -233,7 +270,7 @@ const BecomeSeller = () => {
                       originality, and compliance with our guidelines.
                     </p>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium mb-2">What types of templates can I sell?</h4>
                     <p className="text-sm text-muted-foreground">
@@ -251,71 +288,71 @@ const BecomeSeller = () => {
           <CardContent className="pt-6">
             <h2 className="text-xl font-bold mb-6">Seller Application</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
-      {step === 1 && (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="full_name">Full Name</Label>
-            <Input id="full_name" name="full_name" onChange={handleChange} required />
-          </div>
+              {step === 1 && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="full_name">Full Name</Label>
+                    <Input id="full_name" name="full_name" onChange={handleChange} required />
+                  </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input id="email" name="email" type="email" onChange={handleChange} required />
-          </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input id="email" name="email" type="email" onChange={handleChange} required />
+                  </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input id="username" name="username" onChange={handleChange} required />
-          </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Username</Label>
+                    <Input id="username" name="username" onChange={handleChange} required />
+                  </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" type="password" onChange={handleChange} required />
-          </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input id="password" name="password" type="password" onChange={handleChange} required />
+                  </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone_number">Phone Number</Label>
-            <Input id="phone_number" name="phone_number" onChange={handleChange} required />
-          </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone_number">Phone Number</Label>
+                    <Input id="phone_number" name="phone_number" onChange={handleChange} required />
+                  </div>
 
-          {/* Terms & Conditions */}
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="accept_terms"
-              name="accept_terms"
-              checked={formData.accept_terms}
-              onChange={handleChange}
-              required
-            />
-            <Label htmlFor="accept_terms">
-              I agree to the{" "}
-              <a href="/terms" target="_blank" className="text-blue-500 underline">
-                Terms & Conditions
-              </a>
-            </Label>
-          </div>
+                  {/* Terms & Conditions */}
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="accept_terms"
+                      name="accept_terms"
+                      checked={formData.accept_terms}
+                      onChange={handleChange}
+                      required
+                    />
+                    <Label htmlFor="accept_terms">
+                      I agree to the{" "}
+                      <a href="/terms" target="_blank" className="text-blue-500 underline">
+                        Terms & Conditions
+                      </a>
+                    </Label>
+                  </div>
 
-          <Button
-            type="button"
-            onClick={() => setStep(2)}
-            className="w-full"
-            disabled={!formData.accept_terms}
-          >
-            Continue
-          </Button>
-        </div>
-      )}
+                  <Button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="w-full"
+                    disabled={!formData.accept_terms}
+                  >
+                    Continue
+                  </Button>
+                </div>
+              )}
 
-      {step === 2 && (
-        <div className="space-y-4">
-          {/* Additional fields (if any) can go here */}
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Registering..." : "Register"}
-          </Button>
-        </div>
-      )}
-    </form>
+              {step === 2 && (
+                <div className="space-y-4">
+                  {/* Additional fields (if any) can go here */}
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? "Registering..." : "Register"}
+                  </Button>
+                </div>
+              )}
+            </form>
 
           </CardContent>
         </Card>
@@ -330,6 +367,7 @@ const BecomeSeller = () => {
         </div>
       </div>
     </div>
+
   );
 };
 
