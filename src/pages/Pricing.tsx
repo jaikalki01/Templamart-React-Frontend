@@ -107,7 +107,7 @@ const Pricing = () => {
               <PricingCard
                 title="Basic"
                 description="Perfect for individuals and small projects"
-                price={billingCycle === "monthly" ? 29 : 23.2}
+                price={billingCycle === "monthly" ? 29 : 2300}
                 billingCycle="annual"
                 features={[
                   "5 template downloads per month",
@@ -122,7 +122,7 @@ const Pricing = () => {
               <PricingCard
                 title="Professional"
                 description="Ideal for professionals and growing businesses"
-                price={billingCycle === "monthly" ? 59 : 47.2}
+                price={billingCycle === "monthly" ? 59 : 4700}
                 billingCycle="annual"
                 featured={true}
                 features={[
@@ -140,7 +140,7 @@ const Pricing = () => {
               <PricingCard
                 title="Enterprise"
                 description="For teams and large organizations"
-                price={billingCycle === "monthly" ? 99 : 79.2}
+                price={billingCycle === "monthly" ? 99 : 9000}
                 billingCycle="annual"
                 features={[
                   "Unlimited template downloads",
