@@ -1,3 +1,5 @@
+import { Helmet } from 'react-helmet';
+
 const Terms = () => {
     return (
       <div className="container mx-auto p-6 max-w-[80rem] bg-gray-300 rounded-[30px] mt-[30px] mb-[30px] shadow-[0px_0px_4px_0px_#b5b5b5]">
