@@ -123,7 +123,11 @@ const Contact = () => {
           <div className="space-y-4">
             <div>
               <h2 className="text-xl font-semibold">Address</h2>
-              <p>Jaikalki Technology Pvt Ltd <br />Anand India Business Hub, <br />Mira Road, Mumbai, India</p>
+              <p>   Sh N B1/A Grd Flr Mahavir,<br/> Ngr,
+
+Deepak Hospital, Mira Road,<br/> Thane,
+
+Maharashtra - 401107</p>
             </div>
 
             <div>
