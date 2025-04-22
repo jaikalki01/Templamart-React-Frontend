@@ -51,13 +51,16 @@ import SalesManagement from "@/pages/admin/SalesManagement";
 import AnalyticsManagement from "@/pages/admin/AnalyticsManagement";
 import AdminSettings from "@/pages/admin/AdminSettings";
 
+//Default Meta
+import DefaultMeta from "./DefaultMeta";
+
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
      <BrowserRouter>
-    <AuthProvider>
-     
+     <DefaultMeta />  {/* 🔥 Now this applies meta to all pages by default */}
+    <AuthProvider> 
         <TooltipProvider>
           <ShoppingProvider>
             <Toaster />

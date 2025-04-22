@@ -7,7 +7,7 @@ import { TemplateProps } from "@/components/templates/TemplateCard";
 import axios from "axios";
 import { BASE_URL, DOMAIN } from "@/config";
 import { Link, useNavigate } from "react-router-dom";
-import { Helmet } from 'react-helmet-async';
+
 
 
 // Mock data for the templates
@@ -56,7 +56,8 @@ const Index = () => {
   };
 
   return (
-      
+    
+    
     <div className="flex flex-col">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-brand-700 to-primary py-16 text-white">
@@ -162,6 +163,7 @@ const Index = () => {
         </div>
       </section>
     </div>
+   
   );
 };
 
