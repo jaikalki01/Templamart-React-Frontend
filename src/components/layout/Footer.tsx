@@ -60,18 +60,18 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/category/ui-kits" className="text-sm text-muted-foreground hover:text-foreground">
-                  UI Kits
+                <Link to="/category/ecommerce-templates" className="text-sm text-muted-foreground hover:text-foreground">
+                Ecommerce Templates
                 </Link>
               </li>
               <li>
-                <Link to="/category/graphics" className="text-sm text-muted-foreground hover:text-foreground">
-                  Graphics
+                <Link to="/category/cms-templates" className="text-sm text-muted-foreground hover:text-foreground">
+                CMS Templates
                 </Link>
               </li>
               <li>
-                <Link to="/category/presentations" className="text-sm text-muted-foreground hover:text-foreground">
-                  Presentation Templates
+                <Link to="/category/business-assets" className="text-sm text-muted-foreground hover:text-foreground">
+                Business Assets
                 </Link>
               </li>
             </ul>

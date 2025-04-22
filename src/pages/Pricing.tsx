@@ -55,7 +55,7 @@ const Pricing = () => {
               <PricingCard
                 title="Basic"
                 description="Perfect for individuals and small projects"
-                price={billingCycle === "monthly" ? 29 : 23.2}
+                price={billingCycle === "monthly" ? 2500 : 23.2}
                 features={[
                   "5 template downloads per month",
                   "Basic support",
@@ -69,7 +69,7 @@ const Pricing = () => {
               <PricingCard
                 title="Professional"
                 description="Ideal for professionals and growing businesses"
-                price={billingCycle === "monthly" ? 59 : 47.2}
+                price={billingCycle === "monthly" ? 5500 : 47.2}
                 featured={true}
                 features={[
                   "20 template downloads per month",
@@ -86,7 +86,7 @@ const Pricing = () => {
               <PricingCard
                 title="Enterprise"
                 description="For teams and large organizations"
-                price={billingCycle === "monthly" ? 99 : 79.2}
+                price={billingCycle === "monthly" ? 12000 : 79.2}
                 features={[
                   "Unlimited template downloads",
                   "24/7 dedicated support",
@@ -204,7 +204,7 @@ const PricingCard = ({
 }: PricingCardProps) => {
   return (
     <Card
-      className={`flex flex-col ${
+      className={`flex flex-col ₹{
         featured
           ? "border-primary shadow-lg scale-105 relative z-10"
           : "border-border"
@@ -223,7 +223,7 @@ const PricingCard = ({
       </CardHeader>
       <CardContent className="flex-1">
         <div className="mb-6">
-          <span className="text-4xl font-bold">${price}</span>
+          <span className="text-4xl font-bold">₹{price}</span>
           <span className="text-muted-foreground">
             /{billingCycle === "monthly" ? "month" : "month, billed annually"}
           </span>
