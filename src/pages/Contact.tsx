@@ -123,11 +123,11 @@ const Contact = () => {
           <div className="space-y-4">
             <div>
               <h2 className="text-xl font-semibold">Address</h2>
-              <p>   Sh N B1/A Grd Flr Mahavir,<br/> Ngr,
+              <p>   Sh N B1/A Grd Flr Mahavir,<br /> Ngr,
 
-Deepak Hospital, Mira Road,<br/> Thane,
+                Deepak Hospital, Mira Road,<br /> Thane,
 
-Maharashtra - 401107</p>
+                Maharashtra - 401107</p>
             </div>
 
             <div>

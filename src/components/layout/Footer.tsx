@@ -22,7 +22,8 @@ const Footer = () => {
             </p>
             <p className="text-sm text-muted-foreground">
               Phone: +91 91 369 14 963<br />
-              Landline: +91 22 350 399 27
+              Landline: +91 22 350 399 27<br/>
+              Email: contact@templamart.com
             </p>
           </div>
           <div className="space-y-3">
@@ -107,7 +108,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="mt-8 border-t pt-8">
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground"><a href="https://jaikalki.com/" className="text-blue-500">Jaikalki Technology</a>&nbsp;
             © {new Date().getFullYear()} Templamart. All rights reserved.
           </p>
         </div>
