@@ -14,8 +14,11 @@ const Footer = () => {
               The marketplace for high-quality templates and digital assets for professionals.
             </p>
             <p className="text-sm text-muted-foreground">
-            Jaikalki Technology Pvt Ltd <br />
-              Anand India Business Hub, Mira Road, Mumbai, India
+            Sh N B1/A Grd Flr Mahavir,<br/> Ngr,
+
+              Deepak Hospital, Mira Road,<br/> Thane,
+
+              Maharashtra - 401107
             </p>
             <p className="text-sm text-muted-foreground">
               Phone: +91 91 369 14 963<br />
