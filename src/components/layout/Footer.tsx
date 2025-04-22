@@ -1,21 +1,28 @@
 import logo from "../../img/templamart-logo.png";
 import { Link } from "react-router-dom";
 
-
 const Footer = () => {
   return (
     <footer className="border-t bg-background">
       <div className="container py-8 md:py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="space-y-3">
-            {/* <h3 className="text-lg font-medium">TemplaMarT</h3> */}
-            <Link to="/" className="flex items-center space-x-2"> 
-          <img src={logo} alt="this is logo of company" width={150} />
-       
-            {/* <span className="text-xl font-bold text-primary">TemplaMarT</span> */}
-          </Link>
+            <Link to="/" className="flex items-center space-x-2">
+              <img src={logo} alt="Templamart logo" width={150} />
+            </Link>
             <p className="text-sm text-muted-foreground">
               The marketplace for high-quality templates and digital assets for professionals.
+            </p>
+            <p className="text-sm text-muted-foreground">
+            Sh N B1/A Grd Flr Mahavir,<br/> Ngr,
+
+              Deepak Hospital, Mira Road,<br/> Thane,
+
+              Maharashtra - 401107
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Phone: +91 91 369 14 963<br />
+              Landline: +91 22 350 399 27
             </p>
           </div>
           <div className="space-y-3">
@@ -83,10 +90,9 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/refund" className="text-sm text-muted-foreground hover:text-foreground">
-                Refund Policy
+                  Refund Policy
                 </Link>
               </li>
-
               <li>
                 <Link to="/license" className="text-sm text-muted-foreground hover:text-foreground">
                   License Information
