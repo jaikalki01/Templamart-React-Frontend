@@ -132,7 +132,7 @@ useEffect(() => {
         </form>
 
         {/* User Navigation */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center">
           <Link to="/wishlist" className="hidden md:block relative">
             <Button variant="ghost" size="icon" aria-label="Wishlist">
               <Heart className="h-5 w-5" />
