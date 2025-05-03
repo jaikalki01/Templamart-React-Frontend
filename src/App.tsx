@@ -22,7 +22,7 @@ import Wishlist from "@/pages/Wishlist";
 import Pricing from "@/pages/Pricing";
 import BecomeSeller from "@/pages/BecomeSeller";
 import TemplatesPage from "@/pages/templates/TemplatesPage";
-import TemplateDetails from "@/pages/templates/TemplateDetails";
+import TemplateDetails from "@/pages/templates/TemplateDetails"; 
 import CategoryPage from "@/pages/categories/CategoryPage";
 import UserAccount from "@/pages/UserAccount";
 import NotFound from "@/pages/NotFound";
