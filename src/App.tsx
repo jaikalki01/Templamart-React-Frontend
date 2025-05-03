@@ -51,6 +51,9 @@ import SalesManagement from "@/pages/admin/SalesManagement";
 import AnalyticsManagement from "@/pages/admin/AnalyticsManagement";
 import AdminSettings from "@/pages/admin/AdminSettings";
 
+
+import ScrollToTop from "./components/ScrollToTop"; 
+import ScrollToTopButton from '../src/pages/ScrollToTopButton';
 //Default Meta
 import DefaultMeta from "./DefaultMeta";
 
@@ -58,13 +61,15 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-     <BrowserRouter>
-     <DefaultMeta />  {/* 🔥 Now this applies meta to all pages by default */}
-    <AuthProvider> 
+    <BrowserRouter>
+      <DefaultMeta />  {/* 🔥 Now this applies meta to all pages by default */}
+      <AuthProvider>
         <TooltipProvider>
           <ShoppingProvider>
             <Toaster />
             <Sonner />
+            <ScrollToTopButton />
+            <ScrollToTop />
             <Routes>
               {/* Main Site Routes */}
               <Route element={<MainLayout />}>
@@ -87,7 +92,7 @@ const App = () => (
               </Route>
 
               {/* Seller Dashboard Routes */}
-            
+
               <Route
                 path="/seller/*"
                 element={
@@ -130,8 +135,10 @@ const App = () => (
             </Routes>
           </ShoppingProvider>
         </TooltipProvider>
-      
-    </AuthProvider> 
+        
+        <ScrollToTop />
+
+      </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>
 );
