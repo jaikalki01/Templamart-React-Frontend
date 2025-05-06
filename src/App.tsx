@@ -56,6 +56,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from '../src/pages/ScrollToTopButton';
 //Default Meta
 import DefaultMeta from "./DefaultMeta";
+import AboutUs from './pages/aboutus';
 
 const queryClient = new QueryClient();
 
@@ -89,6 +90,7 @@ const App = () => (
                 <Route path="/license" element={<LicenseAgreement />} />
                 <Route path="account" element={<UserAccount />} />
                 <Route path="contact" element={<Contact />} />
+                <Route path="aboutus" element={<AboutUs />} />
               </Route>
 
               {/* Seller Dashboard Routes */}
