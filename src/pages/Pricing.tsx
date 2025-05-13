@@ -18,15 +18,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { useNavigate } from 'react-router-dom';
 
 const Pricing = () => {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
-
-  const handlePurchase = (plan: string) => {
-    toast.success(`Selected the ${plan} plan`, {
-      description: "You'll be redirected to complete your purchase.",
-    });
+  const navigate = useNavigate();
+  const handlePurchase = (plan: string, navigate: ReturnType<typeof useNavigate>) => {
+    navigate('/signup');
+    // toast.success(`Selected the ${plan} plan`, {
+    //   description: "You'll be redirected to complete your purchase.",
+    // });
   };
+  
+
 
   return (
     <div className="container py-16">
@@ -62,7 +66,7 @@ const Pricing = () => {
                   "License for 1 project",
                   "7-day money-back guarantee",
                 ]}
-                onPurchase={() => handlePurchase("Basic")}
+                onPurchase={() => {handlePurchase("Basic", navigate)}}
               />
 
               {/* Professional Plan */}
@@ -79,7 +83,7 @@ const Pricing = () => {
                   "Template customization",
                   "30-day money-back guarantee",
                 ]}
-                onPurchase={() => handlePurchase("Professional")}
+                onPurchase={() => handlePurchase("Professional", navigate)}
               />
 
               {/* Enterprise Plan */}
@@ -96,7 +100,7 @@ const Pricing = () => {
                   "Team collaboration features",
                   "60-day money-back guarantee",
                 ]}
-                onPurchase={() => handlePurchase("Enterprise")}
+                onPurchase={() => handlePurchase("Enterprise", navigate)}
               />
             </div>
           </TabsContent>
@@ -115,7 +119,7 @@ const Pricing = () => {
                   "License for 1 project",
                   "7-day money-back guarantee",
                 ]}
-                onPurchase={() => handlePurchase("Basic Annual")}
+                onPurchase={() => handlePurchase("Basic Annual", navigate)}
               />
 
               {/* Professional Plan (Annual) */}
@@ -133,7 +137,7 @@ const Pricing = () => {
                   "Template customization",
                   "30-day money-back guarantee",
                 ]}
-                onPurchase={() => handlePurchase("Professional Annual")}
+                onPurchase={() => handlePurchase("Professional Annual", navigate)}
               />
 
               {/* Enterprise Plan (Annual) */}
@@ -151,7 +155,7 @@ const Pricing = () => {
                   "Team collaboration features",
                   "60-day money-back guarantee",
                 ]}
-                onPurchase={() => handlePurchase("Enterprise Annual")}
+                onPurchase={() => handlePurchase("Enterprise Annual", navigate)}
               />
             </div>
           </TabsContent>
