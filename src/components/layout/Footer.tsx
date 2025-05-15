@@ -49,11 +49,11 @@ const Footer = () => {
                   Pricing
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="/become-seller" className="text-sm text-muted-foreground hover:text-foreground">
                   Become a Seller
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
           <div className="space-y-3">

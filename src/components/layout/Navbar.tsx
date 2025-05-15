@@ -102,11 +102,11 @@ useEffect(() => {
                 </Link>
               </NavigationMenuItem>
               
-              <NavigationMenuItem>
+              {/* <NavigationMenuItem>
                 <Link to="/become-seller" className="nav-link">
                   Sell Templates
                 </Link>
-              </NavigationMenuItem>
+              </NavigationMenuItem> */}
             </NavigationMenuList>
           </NavigationMenu>
         </div>
@@ -267,12 +267,12 @@ useEffect(() => {
             >
               Pricing
             </Link>
-            <Link
+            {/* <Link
               to="/become-seller"
               className="rounded-md px-3 py-2 text-sm font-medium"
             >
               Sell Templates
-            </Link>
+            </Link> */}
             <div className="flex items-center justify-between py-2">
               <Link to="/wishlist" className="flex items-center px-3 py-2">
                 <Heart className="mr-2 h-5 w-5" />
