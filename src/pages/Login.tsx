@@ -12,14 +12,14 @@ const Login = () => {
         </p>
       </div>
       <LoginForm />
-      <div className="mt-6 text-center">
+      {/* <div className="mt-6 text-center">
         <div className="text-sm text-muted-foreground">
           Need an admin account?{" "}
           <Link to="/admin/login" className="text-primary hover:underline">
             Admin Login
           </Link>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

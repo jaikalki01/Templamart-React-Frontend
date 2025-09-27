@@ -147,7 +147,7 @@ const Index = () => {
       </section>
 
       {/* Become a Seller Section */}
-      <section className="bg-primary py-16 text-white">
+      {/* <section className="bg-primary py-16 text-white">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold">Start Selling Your Templates</h2>
@@ -161,7 +161,7 @@ const Index = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
    
   );

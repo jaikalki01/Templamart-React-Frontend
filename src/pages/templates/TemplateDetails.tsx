@@ -254,9 +254,12 @@ const TemplateDetails = () => {
     <Button className="w-full">Preview</Button>
   </a>
   
+ {/*
   <a href={templateData.download_url} download className="flex-1">
     <Button className="w-full">Download</Button>
   </a>
+*/}
+
 </div>
 
         </div>

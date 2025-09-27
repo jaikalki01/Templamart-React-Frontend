@@ -61,7 +61,7 @@ const Terms = () => {
         <ul className="list-disc ml-6 mb-4 text-muted-foreground">
           <li><strong>Jaikalki Technology Private Limited</strong></li>
           <li>Address: Sh N B1/A Grd Flr Mahavir Ngr, Deepak Hospital, Mira Road, Thane, Maharashtra, 401107</li>
-          <li>Email: <a href="mailto:info@jaikalki.com" className="text-blue-600">info@jaikalki.com</a></li>
+          <li>Email: <a href="mailto:support@jaikalki.com" className="text-blue-600">support@jaikalki.com</a></li>
         </ul>
       </div>
     );

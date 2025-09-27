@@ -40,8 +40,12 @@ const RefundPolicy = () => {
           <li>A detailed description of the issue with screenshots, if applicable.</li>
           <li>Any error messages received.</li>
         </ul>
-        <p className="text-muted-foreground">Refund requests are reviewed on a case-by-case basis and processed within 7-10 business days if approved.</p>
-        
+        <p className="text-muted-foreground">Refund requests are reviewed on a case-by-case basis. If approved, refunds will be processed within 7–10 business days.
+For assistance, please contact us at support@templamart.com.
+        </p>
+<br></br>
+        <p className="text-muted-foreground">The refund will be processed into the source account.</p>
+ 
         <h2 className="text-2xl font-semibold mt-4 mb-4">6. CONTACT INFORMATION</h2>
         <p className="mb-4 text-muted-foreground">For any refund or return inquiries, please contact:</p>
         <ul className="list-disc ml-6 mb-4 text-muted-foreground">
