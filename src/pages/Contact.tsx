@@ -105,9 +105,9 @@ const Contact = () => {
             <div>
               <h2 className="text-xl font-semibold mb-1">Address</h2>
               <p>
-                B1/A, Ground Floor, Anand India Business Hub,<br/>
-Behind Shree Mahalaxmi Hospital,<br/>
-Deepak Hospital Road, Mira Road East,<br/>
+               Sh N B1/A Grd Flr Mahavir,
+Ngr, <br/>Deepak Hospital,Mira Road,
+Thane,<br/> Maharashtra - 401107
 Thane – 401107.
               </p>
             </div>
