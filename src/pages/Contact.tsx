@@ -1,157 +1,226 @@
 // ContactPage.jsx
-import React from "react";
+import React, { useState } from "react";
+import { Checkbox } from "../components/ui/checkbox";
 import { Helmet } from "react-helmet-async";
+import emailjs from "@emailjs/browser";
 
+interface ContactFormData {
+  name: string;
+  email: string;
+  phone: string;
+  category: string;
+  message: string;
+  agreeToTerms: boolean;
+}
 
 const Contact = () => {
-  return (
+  const [formData, setFormData] = useState<ContactFormData>({
+    name: "",
+    email: "",
+    phone: "",
+    category: "",
+    message: "",
+    agreeToTerms: false,
+  });
 
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const target = e.target;
+    const name = target.name;
+    const value = target.type === "checkbox" ? (target as HTMLInputElement).checked : target.value;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.agreeToTerms) {
+      setErrorMessage("Please agree to the terms.");
+      return;
+    }
+
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+
+    try {
+      await emailjs.send(
+        "service_sly2uy9",
+        "template_2xkewmc",
+        {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          category: formData.category,
+          message: formData.message,
+        },
+        "YRT9ijVLkwdCCSc0o"
+      );
+
+      setSuccessMessage("✅ Thank you! Your message has been sent.");
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        category: "",
+        message: "",
+        agreeToTerms: false,
+      });
+    } catch (error) {
+      console.error("EmailJS Error:", error);
+      setErrorMessage("❌ Something went wrong. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
     <>
-      {/* Meta Tags for SEO */}
+      {/* SEO */}
       <Helmet>
         <title>Contact Us - TemplaMart</title>
         <meta
           name="description"
           content="Get in touch with TemplaMart – the B2B marketplace for website templates. Contact us for support, seller inquiries, or partnership opportunities."
         />
-        <meta
-          name="keywords"
-          content="TemplaMart contact, template marketplace support, become a seller, web design help"
-        />
-
-        {/* Open Graph Meta Tags */}
-        <meta property="og:title" content="Contact Us - TemplaMart" />
-        <meta
-          property="og:description"
-          content="Reach out to TemplaMart for seller support, business inquiries, or general help regarding website templates."
-        />
-        <meta property="og:image" content="https://www.templamart.com/assets/templamart-logo.png" />
-
-        {/* Twitter Meta Tags */}
-        <meta name="twitter:title" content="Contact Us - TemplaMart" />
-        <meta
-          name="twitter:description"
-          content="Reach out to TemplaMart for seller support, business inquiries, or general help regarding website templates."
-        />
-
-        {/* Canonical URL */}
         <link rel="canonical" href="https://www.templamart.com/contact" />
-
-        {/* Schema Markup of contact */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ContactPage",
-            "name": "Contact Us",
-            "description": "Contact TemplaMart for seller support, partnerships, and inquiries.",
-            "url": "https://www.templamart.com/Contact",
-            "mainEntity": {
-              "@type": "Organization",
-              "name": "TemplaMart",
-              "url": "https://www.templamart.com",
-              "logo": "https://www.templamart.com/assets/templamart-logo.png",
-              "contactPoint": {
-                "@type": "ContactPoint",
-                "telephone": "+91 9136914963",
-                "email": "contact@templamart.com",
-                "contactType": "Customer Support",
-                "areaServed": "IN",
-                "availableLanguage": ["English", "Hindi"]
-              }
-            }
-          })}
-        </script>
-
-        {/* BreadCrumb schema */}
-
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              {
-                "@type": "ListItem",
-                position: 1,
-                name: "Home",
-                item: "https://www.templamart.com",
-              },
-              {
-                "@type": "ListItem",
-                position: 2,
-                name: "Contact Us",
-                item: "https://www.templamart.com/contact",
-              },
-            ],
-          })}
-        </script>
-
-        {/* LocalBusiness Schema */}
-        <script type="application/ld+json">
-          {`
-          {
-            "@context": "https://schema.org",
-            "@type": "LocalBusiness",
-            "name": "TemplaMart",
-            "logo": "https://www.templamart.com/assets/templamart-logo.png",
-            "image": "https://www.templamart.com/assets/templamart-logo.png",
-            "url": "https://www.templamart.com",
-            "telephone": "+91 9136914963",
-            "email": "contact@templamart.com",
-            "address": {
-              "@type": "PostalAddress",
-              "streetAddress": "Sh N B1/A Grd Flr Mahavir, Ngr",
-              "addressLocality": "Deepak Hospital, Mira Road",
-              "addressRegion": "Thane",
-              "postalCode": "401107",
-              "addressCountry": "IN"
-            },
-          }
-        `}
-        </script>
-
       </Helmet>
 
+      {/* Banner */}
+      <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-16 px-6 text-center shadow-lg mb-10">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">Contact Us</h1>
 
+      </div>
 
-      {/* Your contact page content */}
-
-      <div className="p-6 max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4 text-center">Contact Us</h1>
-
-        <div className="grid md:grid-cols-2 gap-6">
+      {/* Content */}
+      <div className="p-6 max-w-6xl mx-auto">
+        <div className="flex flex-col-reverse md:flex-row gap-10 md:gap-0">
           {/* Contact Info */}
-          <div className="space-y-4">
+          <div className="space-y-6 px-4 md:px-0 flex flex-col justify-center mx-auto w-[100%]">
             <div>
-              <h2 className="text-xl font-semibold">Address</h2>
-              <p>   Sh N B1/A Grd Flr Mahavir,<br /> Ngr,
-
-                Deepak Hospital, Mira Road,<br /> Thane,
-
-                Maharashtra - 401107</p>
+              <h2 className="text-xl font-semibold mb-1">Address</h2>
+              <p>
+               Sh N B1/A Grd Flr Mahavir,
+Ngr, <br/>Deepak Hospital,Mira Road,
+Thane,<br/> Maharashtra - 401107
+Thane – 401107.
+              </p>
             </div>
-
             <div>
-              <h2 className="text-xl font-semibold">Phone</h2>
-              <p><a href="tel:9136914963">+91 91 369 14 963</a></p>
-              <p><a href="tel:2235039927">+91 22 350 399 27</a></p>
+              <h2 className="text-xl font-semibold mb-1">Phone</h2>
+              <p>
+                <a href="tel:9136914963" className="text-blue-600 hover:underline">+91 91 369 14 963</a>
+              </p>
+              <p>
+                <a href="tel:2235039927" className="text-blue-600 hover:underline">+91 22 350 399 27</a>
+              </p>
             </div>
-
             <div>
-              <h2 className="text-xl font-semibold">Email</h2>
+              <h2 className="text-xl font-semibold mb-1">Email</h2>
               <p>contact@templamart.com</p>
             </div>
           </div>
 
-          {/* Google Map */}
-          <div>
-            <iframe
-              title="Jaikalki Technology Location"
-              className="w-full h-64 rounded-xl shadow-md border-0"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3765.6364750560297!2d72.86413107425768!3d19.298168644962143!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7b1a675c13bbd%3A0xe736cc973d82f656!2sJaikalki%20Technology!5e0!3m2!1sen!2sin!4v1745051661578!5m2!1sen!2sin"
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            ></iframe>
+          {/* Contact Form */}
+          <div className="bg-white shadow-lg rounded-xl p-6 w-full md:w-auto w-[100%] md:w-[100%]">
+            <h2 className="text-2xl font-semibold mb-4 text-center md:text-left">Contact Our Support Team</h2>
+
+            {/* Success / Error messages */}
+            {successMessage && <p className="text-green-600 mb-2">{successMessage}</p>}
+            {errorMessage && <p className="text-red-600 mb-2">{errorMessage}</p>}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input
+                type="text"
+                name="name"
+                placeholder="Your Name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border rounded-lg"
+              />
+
+              <input
+                type="email"
+                name="email"
+                placeholder="Your Email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border rounded-lg"
+              />
+
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Phone Number"
+                value={formData.phone}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-lg"
+              />
+
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border rounded-lg"
+              >
+                <option value="">Select Category</option>
+                <option value="General Inquiry">General Inquiry</option>
+                <option value="Order Support">Order Support</option>
+                <option value="Become a Seller">Become a Seller</option>
+                <option value="Product Inquiry">Product Inquiry</option>
+                <option value="Payment Issues">Payment Issues</option>
+                <option value="Customer Support">Customer Support</option>
+                <option value="Other">Other</option>
+              </select>
+
+              <textarea
+                name="message"
+                rows={4}
+                placeholder="Your Message"
+                value={formData.message}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border rounded-lg"
+              ></textarea>
+
+              {/* Checkbox */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="terms"
+                  name="agreeToTerms"
+                  checked={formData.agreeToTerms}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, agreeToTerms: Boolean(checked) }))
+                  }
+                />
+                <label htmlFor="terms" className="text-sm font-medium">
+                  I agree to get updates, offers & promos via SMS, RCS & WhatsApp.
+                </label>
+              </div>
+
+              <div className="flex flex-wrap gap-2 text-sm">
+                <a href="/terms-condition" className="text-blue-600 hover:underline">T & C</a> |{" "}
+                <a href="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</a>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition ${
+                  loading ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+              >
+                {loading ? "Sending..." : "Send Message"}
+              </button>
+            </form>
           </div>
         </div>
       </div>
