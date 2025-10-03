@@ -19,10 +19,10 @@ import { Link, useNavigate } from "react-router-dom";
 const Index = () => {
   //const BASE_URL ="http://127.0.0.1:8000/product"
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
   const [newTemplates, setNewTemplates] = useState<TemplateProps[]>([]);
   const [featuredTemplates, setfeaturedTemplates] = useState<TemplateProps[]>([]);
   const [popularCategories, setCategories] = useState([]);
-   const navigate = useNavigate();
   useEffect(() => {
     axios.get(`${BASE_URL}/product/templates`)
       .then(response => {
@@ -79,7 +79,6 @@ const Index = () => {
               placeholder="Search for templates..."
               className="h-12 flex-1 border-transparent bg-white/20 text-white placeholder:text-white/70 backdrop-blur-sm focus:border-white/40"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <Button type="submit" className="h-12 bg-white text-primary hover:bg-white/90">
               Search Templates

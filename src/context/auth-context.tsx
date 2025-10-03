@@ -7,11 +7,13 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "@/config";
+
 // Define user shape
 type User = {
   role: number;
   token: string;
-  username: string; // ✅ Add this
+  username: string;
+  expiry: number; // ✅ add expiry time in ms
 };
 
 type AuthContextType = {
@@ -31,16 +33,33 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
-// Provider
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
-  // Restore user from localStorage on mount
+  // Auto logout when token expires
+  const scheduleLogout = (expiry: number) => {
+    const timeout = expiry - Date.now();
+    if (timeout > 0) {
+      setTimeout(() => {
+        logout();
+      }, timeout);
+    } else {
+      logout();
+    }
+  };
+
+  // Restore user from localStorage
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      const parsedUser: User = JSON.parse(savedUser);
+      if (Date.now() < parsedUser.expiry) {
+        setUser(parsedUser);
+        scheduleLogout(parsedUser.expiry);
+      } else {
+        logout();
+      }
     }
   }, []);
 
@@ -64,17 +83,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const data = await response.json();
 
+      // decode JWT expiry (standard `exp` claim)
+      const payload = JSON.parse(atob(data.access_token.split(".")[1]));
+      const expiry = payload.exp * 1000; // convert to ms
+
       const userData: User = {
         token: data.access_token,
-  role: data.role,
-  username: data.username, // ✅ Add this
+        role: data.role,
+        username: data.username,
+        expiry,
       };
-
-localStorage.setItem("user", JSON.stringify(userData));
-setUser(userData);
 
       localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
+
+      // schedule auto logout
+      scheduleLogout(expiry);
 
       // Redirect based on role
       if (data.role === 3) {
@@ -96,11 +120,16 @@ setUser(userData);
     navigate("/login");
   };
 
-  
-
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!user,
-      currentUser: user,  user, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated: !!user,
+        currentUser: user,
+        user,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
